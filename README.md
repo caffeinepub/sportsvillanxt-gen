@@ -1,2 +1,3 @@
-# sportsvillanxt-gen
-Exported from Caffeine project: sportsvillanxt_gen
+## sportsvillanxt_gen
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

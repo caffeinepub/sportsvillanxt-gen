@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Build a full-stack web app for SportsVilla NXT GEN turf management with two interfaces: an Owner/Admin dashboard for managing slots, bookings, pricing, and earnings; and a Customer booking page for checking availability, booking, payment placeholder, and receipt confirmation.",
+  "architectural_notes": [
+    "Tech stack: React frontend, Node.js backend, MongoDB or Firebase database.",
+    "UI: Tailwind CSS with dark mode theme and neon green accents.",
+    "App structure: two main interfaces—Owner/Admin Dashboard and Customer Booking Page."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Sports-style shield logo with a cricket batter silhouette, dark green + neon green + gold palette, text 'SPORTSVILLA' and 'NXT GEN' (sportsvilla-logo.dim_512x512.png)\n- Square app icon variant of the shield logo, simplified for small sizes (sportsvilla-appicon.dim_256x256.png)\n- Favicon version of the simplified shield mark (sportsvilla-favicon.dim_64x64.png)\n- Subtle dark sporty background pattern (turf lines / stadium lights vibe), low-contrast (sportsvilla-bg-pattern.dim_1920x1080.png)",
+  "existing_features": [
+    {
+      "id": "feature-create-two-primary-frontend-experiences-1-an-owner-admin-dashboard-and-2-a-customer-booking-interface-with-clear-navigation-to-switch-between-them",
+      "title": "Create two primary frontend experiences: (1) an Owner/Admin Dashboard and (2) a Customer Booking interface, with clear navigation to switch between them.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-owner-admin-access-control-using-internet-identity-only-an-allowlisted-owner-principal-can-access-admin-features-non-owners-are-blocked-from-admin-pages-and-shown-an-english-message-explaining-access-is-restricted",
+      "title": "Implement Owner/Admin access control using Internet Identity: only an allowlisted owner principal can access Admin features; non-owners are blocked from Admin pages and shown an English message explaining access is restricted.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-slot-management-settings-define-opening-time-closing-time-and-slot-duration-in-minutes-store-and-retrieve-these-settings-from-the-backend",
+      "title": "Implement Admin Slot Management settings: define opening time, closing time, and slot duration (in minutes). Store and retrieve these settings from the backend.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-pricing-rules-configure-different-rates-for-weekdays-vs-weekends-and-different-rates-for-morning-vs-floodlight-night-hours-backend-must-compute-the-correct-price-for-a-given-slot-based-on-these-rules",
+      "title": "Implement Admin Pricing rules: configure different rates for weekdays vs weekends and different rates for morning vs floodlight (night) hours; backend must compute the correct price for a given slot based on these rules.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-booking-calendar-view-provide-a-visual-calendar-day-schedule-that-shows-booked-vs-available-slots-for-a-selected-date-derived-from-backend-bookings-and-blocked-slots",
+      "title": "Implement Admin Booking Calendar view: provide a visual calendar/day schedule that shows booked vs available slots for a selected date, derived from backend bookings and blocked slots.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-manual-entry-to-block-slots-owner-can-block-one-or-more-slots-for-maintenance-or-offline-bookings-with-an-optional-note-reason-blocked-slots-must-appear-as-unavailable-for-customers",
+      "title": "Implement Admin Manual Entry to block slots: owner can block one or more slots for maintenance or offline bookings, with an optional note/reason; blocked slots must appear as unavailable for customers.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-customer-availability-check-for-a-selected-date-show-an-up-to-date-list-of-available-slots-based-on-slot-settings-bookings-and-blocked-slots",
+      "title": "Implement Customer Availability Check: for a selected date, show an up-to-date list of available slots based on slot settings, bookings, and blocked slots.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-customer-booking-flow-allow-selecting-a-slot-and-submitting-a-booking-form-with-name-phone-number-and-sport-football-cricket-backend-must-validate-slot-availability-at-time-of-booking-to-prevent-double-booking",
+      "title": "Implement Customer Booking flow: allow selecting a slot and submitting a booking form with Name, Phone Number, and Sport (Football/Cricket). Backend must validate slot availability at time of booking to prevent double-booking.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-payment-integration-placeholder-step-in-the-customer-flow-upi-gateway-clearly-show-it-is-a-placeholder-and-does-not-process-real-payments-continue-to-confirmation-for-now",
+      "title": "Add a Payment Integration placeholder step in the customer flow (UPI/Gateway): clearly show it is a placeholder and does not process real payments; continue to confirmation for now.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-a-digital-receipt-after-a-successful-booking-including-a-unique-booking-id-and-the-booking-details-date-time-sport-name-phone-price-provide-a-customer-friendly-confirmation-page",
+      "title": "Generate a digital receipt after a successful booking, including a unique booking ID and the booking details (date, time, sport, name, phone, price). Provide a customer-friendly confirmation page.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-earnings-tracker-show-daily-and-weekly-revenue-totals-based-on-completed-bookings-provide-basic-filters-for-date-range-or-week-selection",
+      "title": "Implement Admin Earnings Tracker: show daily and weekly revenue totals based on completed bookings; provide basic filters for date range or week selection.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-coherent-modern-sporty-visual-theme-across-the-app-dark-mode-ui-with-neon-green-accents-with-consistent-typography-spacing-and-component-styling-for-both-admin-and-customer-interfaces",
+      "title": "Create a coherent, modern sporty visual theme across the app: dark mode UI with neon green accents, with consistent typography, spacing, and component styling for both Admin and Customer interfaces.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-brand-assets-inspired-by-the-uploaded-sportsvilla-nxt-gen-imagery-and-use-them-in-the-ui-as-static-frontend-assets-do-not-serve-images-via-the-backend",
+      "title": "Add generated brand assets inspired by the uploaded SportsVilla NXT GEN imagery and use them in the UI as static frontend assets (do not serve images via the backend).",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Owner/Admin Dashboard: slot management (opening/closing hours, slot duration)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Owner/Admin Dashboard: booking calendar view (booked vs available slots)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Owner/Admin Dashboard: manual entry to block slots (maintenance/offline bookings)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Owner/Admin Dashboard: pricing rules (weekday vs weekend, morning vs floodlight/night)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Owner/Admin Dashboard: earnings tracker (daily/weekly revenue)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Customer Booking Page: real-time availability check by selected date",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Customer Booking Page: booking form (Name, Phone, Sport: Football/Cricket)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Customer Booking Page: payment integration placeholder (UPI/Gateway)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Customer Booking Page: booking confirmation with digital receipt + booking ID",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "sportsvillanxt_gen",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

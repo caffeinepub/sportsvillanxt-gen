@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --radius: 0.5rem;
+        
+        /* Light mode - keeping defaults but unused since we force dark */
+        --background: 0 0% 100%;
+        --foreground: 0 0% 3.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 3.9%;
+        --primary: 0 0% 9%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 96.1%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96.1%;
+        --muted-foreground: 0 0% 45.1%;
+        --accent: 0 0% 96.1%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 89.8%;
+        --input: 0 0% 89.8%;
+        --ring: 0 0% 3.9%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+    }
+
+    .dark {
+        /* Dark sporty theme with neon green accents */
+        --background: oklch(0.12 0.01 240);
+        --foreground: oklch(0.98 0.01 120);
+        
+        --card: oklch(0.16 0.015 240);
+        --card-foreground: oklch(0.98 0.01 120);
+        
+        --popover: oklch(0.14 0.015 240);
+        --popover-foreground: oklch(0.98 0.01 120);
+        
+        /* Neon green primary */
+        --primary: oklch(0.85 0.22 145);
+        --primary-foreground: oklch(0.12 0.01 240);
+        
+        --secondary: oklch(0.22 0.02 240);
+        --secondary-foreground: oklch(0.98 0.01 120);
+        
+        --muted: oklch(0.22 0.02 240);
+        --muted-foreground: oklch(0.65 0.01 120);
+        
+        --accent: oklch(0.25 0.03 240);
+        --accent-foreground: oklch(0.98 0.01 120);
+        
+        --destructive: oklch(0.65 0.25 25);
+        --destructive-foreground: oklch(0.98 0.01 120);
+        
+        --border: oklch(0.25 0.02 240);
+        --input: oklch(0.25 0.02 240);
+        --ring: oklch(0.85 0.22 145);
+        
+        --chart-1: oklch(0.75 0.20 145);
+        --chart-2: oklch(0.65 0.18 200);
+        --chart-3: oklch(0.55 0.15 280);
+        --chart-4: oklch(0.70 0.22 60);
+        --chart-5: oklch(0.60 0.20 320);
+    }
+
+    * {
+        @apply border-border;
+    }
+    
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+}

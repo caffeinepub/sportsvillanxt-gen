@@ -1,0 +1,165 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-08T07:07:57.876Z",
+  "summary": "Diff adds a Motoko backend actor with slot settings, pricing rules, and block/unblock slot APIs plus React+TS frontend with Admin/Customer routes, UI forms, calendar, earnings tracker UI, Internet Identity login, and generated-asset references. Several core requirements (notably stable persistence, booking/availability/receipt backend + some slot-duration behaviors) are not evidenced in the provided diff summary, and some unrequested features (user profiles, secret-token admin initialization, branding footer) appear.",
+  "missing_requirements": [
+    {
+      "id": "REQ-2",
+      "requirement": "Owner/Admin access control must be allowlisted by owner principal via Internet Identity, and backend must enforce owner-only rules for Admin operations.",
+      "reason": "Backend admin enforcement appears to rely on an AccessControl module plus a secret-token initialization hook from the frontend, but there is no evidence of an allowlisted owner principal mechanism as specified. The frontend also initializes access control using a URL secret parameter rather than a principal allowlist.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useActor.ts"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Slot duration (in minutes) must be reflected in customer availability and admin calendar slot generation.",
+      "reason": "Admin calendar slot generation iterates by whole hours (hour++), not by slotDuration minutes, so non-60-minute durations would not be reflected.",
+      "evidence": [
+        "frontend/src/components/admin/AdminBookingCalendar.tsx"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Admin booking calendar should show all generated slots for a date based on backend slot settings (including slot duration), with statuses Available / Booked / Blocked.",
+      "reason": "The calendar generation shown is hour-based and does not incorporate slotDuration; also the provided excerpt does not show explicit rendering of Available/Booked/Blocked statuses (file is truncated), so full AC coverage is not evidenced.",
+      "evidence": [
+        "frontend/src/components/admin/AdminBookingCalendar.tsx"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Admin can block one or more slots (optionally multiple contiguous slots) with an optional note/reason.",
+      "reason": "The backend type and APIs shown represent a single BlockedSlot keyed by date+startHour, and the dialog blocks/unblocks a single slot only; no evidence of blocking multiple contiguous slots in one action.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/admin/BlockSlotsDialog.tsx"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Backend must compute deterministic price for a given slot based on weekday/weekend and morning/floodlight split; customer summary shows computed price before confirmation.",
+      "reason": "Pricing rules storage/update/get is present, but the diff excerpt does not show any backend method that computes a slot price, nor a backend-returned computed price used in the customer flow (frontend uses a calculatePrice callback).",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/customer/AvailableSlotsList.tsx",
+        "frontend/src/components/customer/BookingForm.tsx"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "requirement": "Customer availability query must come from backend and reflect slot settings, bookings, and blocked slots.",
+      "reason": "The UI component expects an availability array, but no backend availability query is visible in the provided backend excerpt, and the relevant hooks/pages are truncated/omitted so the backend-driven availability behavior is not evidenced.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/customer/AvailableSlotsList.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "requirement": "Backend must validate slot availability at booking time to prevent double-booking, persist booking tied to date+time slot, and reject booked/blocked slots with a user-displayable error.",
+      "reason": "Frontend calls a createBooking mutation, but the backend excerpt provided does not show booking types/storage, createBooking implementation, or server-side validation logic.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/customer/BookingForm.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "requirement": "Backend generates unique booking ID; customer sees confirmation/receipt and can revisit via booking ID lookup.",
+      "reason": "Routes exist for confirmation and receipt lookup, but the backend excerpt does not show booking ID generation or receipt lookup query; page implementations are not included in the shown diff.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "requirement": "Admin earnings tracker must compute daily/weekly revenue totals from persisted bookings using stored/computed price, and update when new bookings are created.",
+      "reason": "Frontend has an EarningsTracker UI calling useGetDailyEarnings/useGetWeeklyEarnings, but the backend excerpt does not show earnings/report endpoints or booking price aggregation.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/admin/EarningsTracker.tsx"
+      ]
+    },
+    {
+      "requirement": "Persist data in canister stable storage (no external DB).",
+      "reason": "The backend excerpt shows in-memory vars/Maps (slotSettings, pricingRules, blockedSlots, userProfiles) with no evidence of stable variables or preupgrade/postupgrade persistence handling.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "requirement": "Generated brand assets must be added under frontend/public/assets/generated/ and favicon set to generated favicon.",
+      "reason": "Frontend references the generated logo and background pattern paths, but the diff summary does not show the actual image files added under frontend/public/assets/generated/ nor any favicon configuration.",
+      "evidence": [
+        "frontend/src/components/layout/AppLayout.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "User profile storage/CRUD and mandatory profile completion gate (name/phone) before accessing admin flow.",
+      "reason": "Not requested by any REQ; spec only asks for booking form fields and admin access control.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/auth/RequireAdmin.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "description": "Secret token-based access control initialization via URL parameter (caffeineAdminToken) on actor creation.",
+      "reason": "Spec requires owner allowlisted principal via Internet Identity; using a secret URL token is not requested and may conflict with the intended model.",
+      "evidence": [
+        "frontend/src/hooks/useActor.ts",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Footer branding/link to caffeine.ai ('Built with love using caffeine.ai').",
+      "reason": "Not requested in requirements or acceptance criteria.",
+      "evidence": [
+        "frontend/src/components/layout/AppLayout.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.66,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/admin/AdminBookingCalendar.tsx",
+    "frontend/src/components/admin/BlockSlotsDialog.tsx",
+    "frontend/src/components/admin/EarningsTracker.tsx",
+    "frontend/src/components/admin/PricingRulesForm.tsx",
+    "frontend/src/components/admin/SlotSettingsForm.tsx",
+    "frontend/src/components/auth/AccessRestrictedScreen.tsx",
+    "frontend/src/components/auth/LoginButton.tsx",
+    "frontend/src/components/auth/RequireAdmin.tsx",
+    "frontend/src/components/customer/AvailableSlotsList.tsx",
+    "frontend/src/components/customer/BookingForm.tsx",
+    "frontend/src/components/customer/BookingSummary.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/customer/BookingConfirmationPage.tsx",
+    "frontend/src/pages/customer/CustomerBookingPage.tsx",
+    "frontend/src/pages/customer/PaymentPlaceholderPage.tsx",
+    "frontend/src/pages/customer/ReceiptLookupPage.tsx",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}
