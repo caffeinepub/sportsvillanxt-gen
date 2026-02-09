@@ -52,6 +52,103 @@ export function useIsCallerAdmin() {
   });
 }
 
+// Ownership Queries
+export function useIsOwnershipClaimable() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['ownershipClaimable'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isOwnershipClaimable();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useClaimOwnership() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        // Use backendResetAndClaimOwnership for initial claim when ownership is claimable
+        await actor.backendResetAndClaimOwnership();
+      } catch (error: any) {
+        // Extract clean error message from backend trap
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('Ownership has already been claimed')) {
+          throw new Error('Ownership has already been claimed by another user');
+        } else if (errorMessage.includes('Unauthorized')) {
+          throw new Error('Ownership has already been claimed');
+        }
+        throw new Error('Failed to claim ownership. Please try again.');
+      }
+    },
+    onSuccess: () => {
+      // Invalidate admin status and ownership claimable to reflect new ownership
+      queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
+      queryClient.invalidateQueries({ queryKey: ['ownershipClaimable'] });
+    },
+  });
+}
+
+export function useResetAndClaimOwnership() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        await actor.backendResetAndClaimOwnership();
+      } catch (error: any) {
+        // Extract clean error message from backend trap
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('Unauthorized')) {
+          throw new Error('You must be an admin to reset and claim ownership');
+        }
+        throw new Error('Failed to reset and claim ownership. Please try again.');
+      }
+    },
+    onSuccess: () => {
+      // Invalidate admin status and ownership claimable to reflect new ownership
+      queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
+      queryClient.invalidateQueries({ queryKey: ['ownershipClaimable'] });
+    },
+  });
+}
+
+export function useEmergencyResetOwnership() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (resetCode: string) => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        await actor.emergencyResetOwnership(resetCode);
+      } catch (error: any) {
+        // Extract clean error message from backend trap
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('Invalid emergency reset code')) {
+          throw new Error('Invalid reset code. Please check and try again.');
+        } else if (errorMessage.includes('Unauthorized')) {
+          throw new Error('Invalid reset code');
+        }
+        throw new Error('Failed to reset ownership. Please try again.');
+      }
+    },
+    onSuccess: () => {
+      // Invalidate both admin status and ownership claimable queries
+      queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
+      queryClient.invalidateQueries({ queryKey: ['ownershipClaimable'] });
+    },
+  });
+}
+
 // Slot Settings Queries
 export function useGetSlotSettings() {
   const { actor, isFetching } = useActor();
@@ -137,7 +234,6 @@ export function useBlockSlot() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blockedSlots'] });
       queryClient.invalidateQueries({ queryKey: ['availability'] });
-      queryClient.invalidateQueries({ queryKey: ['allBookings'] });
     },
   });
 }
@@ -154,7 +250,6 @@ export function useUnblockSlot() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blockedSlots'] });
       queryClient.invalidateQueries({ queryKey: ['availability'] });
-      queryClient.invalidateQueries({ queryKey: ['allBookings'] });
     },
   });
 }
@@ -164,13 +259,12 @@ export function useCheckAvailability(date: bigint | null) {
   const { actor, isFetching } = useActor();
 
   return useQuery<bigint[]>({
-    queryKey: ['availability', date?.toString()],
+    queryKey: ['availability', date?.toString() ?? 'none'],
     queryFn: async () => {
-      if (!actor || !date) return [];
+      if (!actor || !date) throw new Error('Actor or date not available');
       return actor.checkAvailability(date);
     },
     enabled: !!actor && !isFetching && date !== null,
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
 }
 
@@ -196,24 +290,22 @@ export function useCreateBooking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['availability'] });
-      queryClient.invalidateQueries({ queryKey: ['allBookings'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['myBookings'] });
-      queryClient.invalidateQueries({ queryKey: ['earnings'] });
     },
   });
 }
 
-export function useGetBooking(bookingId: string | null) {
+export function useGetBooking(id: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Booking>({
-    queryKey: ['booking', bookingId],
+    queryKey: ['booking', id],
     queryFn: async () => {
-      if (!actor || !bookingId) throw new Error('Booking ID required');
-      return actor.getBooking(bookingId);
+      if (!actor) throw new Error('Actor not available');
+      return actor.getBooking(id);
     },
-    enabled: !!actor && !isFetching && !!bookingId,
-    retry: false,
+    enabled: !!actor && !isFetching && !!id,
   });
 }
 
@@ -223,7 +315,7 @@ export function useGetMyBookings() {
   return useQuery<Booking[]>({
     queryKey: ['myBookings'],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       return actor.getMyBookings();
     },
     enabled: !!actor && !isFetching,
@@ -236,7 +328,7 @@ export function useGetAllBookings() {
   return useQuery<Booking[]>({
     queryKey: ['allBookings'],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       return actor.getAllBookings();
     },
     enabled: !!actor && !isFetching,
@@ -244,28 +336,28 @@ export function useGetAllBookings() {
 }
 
 // Earnings Queries
-export function useGetDailyEarnings(date: bigint | null) {
+export function useGetDailyEarnings(date: bigint) {
   const { actor, isFetching } = useActor();
 
   return useQuery<EarningsReport>({
-    queryKey: ['earnings', 'daily', date?.toString()],
+    queryKey: ['dailyEarnings', date.toString()],
     queryFn: async () => {
-      if (!actor || !date) throw new Error('Date required');
+      if (!actor) throw new Error('Actor not available');
       return actor.getDailyEarnings(date);
     },
-    enabled: !!actor && !isFetching && date !== null,
+    enabled: !!actor && !isFetching,
   });
 }
 
-export function useGetWeeklyEarnings(startDate: bigint | null, endDate: bigint | null) {
+export function useGetWeeklyEarnings(startDate: bigint, endDate: bigint) {
   const { actor, isFetching } = useActor();
 
   return useQuery<EarningsReport>({
-    queryKey: ['earnings', 'weekly', startDate?.toString(), endDate?.toString()],
+    queryKey: ['weeklyEarnings', startDate.toString(), endDate.toString()],
     queryFn: async () => {
-      if (!actor || !startDate || !endDate) throw new Error('Date range required');
+      if (!actor) throw new Error('Actor not available');
       return actor.getWeeklyEarnings(startDate, endDate);
     },
-    enabled: !!actor && !isFetching && startDate !== null && endDate !== null,
+    enabled: !!actor && !isFetching,
   });
 }

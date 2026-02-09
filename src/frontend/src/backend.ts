@@ -139,9 +139,11 @@ export enum UserRole {
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    backendResetAndClaimOwnership(): Promise<void>;
     blockSlot(slot: BlockedSlot): Promise<void>;
     book(timeSlot: TimeSlot, customerName: string, phoneNumber: string, sport: string): Promise<string>;
     checkAvailability(date: bigint): Promise<Array<bigint>>;
+    emergencyResetOwnership(authorizationKey: string): Promise<void>;
     getAllBookings(): Promise<Array<Booking>>;
     getBlockedSlots(): Promise<Array<BlockedSlot>>;
     getBooking(id: string): Promise<Booking>;
@@ -155,6 +157,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWeeklyEarnings(startDate: bigint, endDate: bigint): Promise<EarningsReport>;
     isCallerAdmin(): Promise<boolean>;
+    isOwnershipClaimable(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     unblockSlot(date: bigint, startHour: bigint): Promise<void>;
     updatePricingRules(rules: PricingRules): Promise<void>;
@@ -188,6 +191,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async backendResetAndClaimOwnership(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.backendResetAndClaimOwnership();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.backendResetAndClaimOwnership();
             return result;
         }
     }
@@ -230,6 +247,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.checkAvailability(arg0);
+            return result;
+        }
+    }
+    async emergencyResetOwnership(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.emergencyResetOwnership(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.emergencyResetOwnership(arg0);
             return result;
         }
     }
@@ -412,6 +443,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isCallerAdmin();
+            return result;
+        }
+    }
+    async isOwnershipClaimable(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isOwnershipClaimable();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isOwnershipClaimable();
             return result;
         }
     }

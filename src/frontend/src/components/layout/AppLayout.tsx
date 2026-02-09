@@ -1,15 +1,26 @@
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Calendar, LayoutDashboard } from 'lucide-react';
+import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import LoginButton from '../auth/LoginButton';
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const routerState = useRouterState();
+  const { identity } = useInternetIdentity();
   const currentPath = routerState.location.pathname;
 
+  const isAuthenticated = !!identity;
   const isAdminRoute = currentPath.startsWith('/admin');
   const isCustomerRoute = currentPath === '/' || currentPath.startsWith('/payment') || currentPath.startsWith('/confirmation') || currentPath.startsWith('/receipt');
+
+  const handleAdminClick = () => {
+    if (isAuthenticated) {
+      navigate({ to: '/admin' });
+    } else {
+      navigate({ to: '/admin/login' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -58,7 +69,7 @@ export default function AppLayout() {
               <Button
                 variant={isAdminRoute ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => navigate({ to: '/admin' })}
+                onClick={handleAdminClick}
                 className="gap-2"
               >
                 <LayoutDashboard className="h-4 w-4" />

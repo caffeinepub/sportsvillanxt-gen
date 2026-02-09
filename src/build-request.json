@@ -1,276 +1,60 @@
 {
   "kind": "build_request",
-  "title": "SportsVilla NXT GEN turf management app (Admin dashboard + Customer booking)",
+  "title": "Make owner reset reliable by adding an atomic reset-and-claim flow",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Create two primary frontend experiences: (1) an Owner/Admin Dashboard and (2) a Customer Booking interface, with clear navigation to switch between them.",
+      "id": "REQ-28",
+      "text": "Backend: Add a single-call API that resets admin ownership and immediately assigns ownership to the caller in the same update call, to prevent the situation where the user resets ownership but another Internet Identity claims it first (\"ownership already claimed\").",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "Reset again"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new backend update method exists that takes the emergency reset code and, if valid, performs: (1) reset ownership to claimable, then (2) claim ownership for the current caller, then (3) returns success, all in one update call.",
+        "If the emergency reset code is invalid, the method traps with an English error message indicating the reset code is invalid.",
+        "If the reset-and-claim call succeeds, subsequent calls to the existing isOwnershipClaimable() return false.",
+        "After a successful reset-and-claim, the caller is recognized as admin by the backend admin check used by the frontend (useIsCallerAdmin)."
+      ]
+    },
+    {
+      "id": "REQ-29",
+      "text": "Frontend: Update the Admin Login page to support a one-step \"Reset and Claim Ownership\" action (using the entered reset code) for authenticated non-admin users, and redirect to the Admin Dashboard on success.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5"
         ],
         "quotes": [
-          "The app should have two main interfaces:\n\n1. Owner/Admin Dashboard:\n...\n\n2. Customer Booking Page:"
+          "Reset again"
         ]
       },
       "acceptanceCriteria": [
-        "App provides distinct Admin and Customer sections/pages with consistent layout and navigation.",
-        "URLs/routes (or equivalent in-app navigation) exist for both sections."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Implement Owner/Admin access control using Internet Identity: only an allowlisted owner principal can access Admin features; non-owners are blocked from Admin pages and shown an English message explaining access is restricted.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Owner/Admin Dashboard"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin pages require login via Internet Identity.",
-        "Backend enforces owner-only rules for Admin operations (not only frontend hiding).",
-        "Non-owner principals cannot call Admin-only update methods successfully."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Implement Admin Slot Management settings: define opening time, closing time, and slot duration (in minutes). Store and retrieve these settings from the backend.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Slot Management: Ability to define turf opening/closing hours and slot duration (e.g., 60 mins)."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can set opening time, closing time, and slot duration and save changes.",
-        "Customer availability and Admin calendar both reflect updated slot settings.",
-        "Settings persist across refresh/reload."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Implement Admin Pricing rules: configure different rates for weekdays vs weekends and different rates for morning vs floodlight (night) hours; backend must compute the correct price for a given slot based on these rules.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Pricing: Set different rates for weekdays vs weekends or morning vs floodlight (night) hours."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can define weekday/weekend base rates and a time-based (morning vs night/floodlight) pricing split.",
-        "For any slot time/date, the backend returns a deterministic computed price based on the configured rules.",
-        "Customer booking summary shows the computed price for the selected slot before confirmation."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Implement Admin Booking Calendar view: provide a visual calendar/day schedule that shows booked vs available slots for a selected date, derived from backend bookings and blocked slots.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Booking Calendar: A visual calendar view to see booked and available slots."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can select a date and see a list/grid of all generated slots for that date.",
-        "Slots display status: Available / Booked / Blocked.",
-        "Calendar view updates after creating or blocking a booking without a full reload."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Implement Admin Manual Entry to block slots: owner can block one or more slots for maintenance or offline bookings, with an optional note/reason; blocked slots must appear as unavailable for customers.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Manual Entry: Owner should be able to block slots for maintenance or offline bookings."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can block a specific date+time slot (and optionally multiple contiguous slots) and provide a reason/note.",
-        "Blocked slots are displayed in Admin calendar as Blocked.",
-        "Customer availability does not show blocked slots as bookable."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Implement Customer Availability Check: for a selected date, show an up-to-date list of available slots based on slot settings, bookings, and blocked slots.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Availability Check: Real-time view of available slots for a selected date."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Customer can pick a date and see available time slots.",
-        "If a slot is booked/blocked from another session, refreshing or re-fetching availability reflects the new state.",
-        "Availability data comes from backend queries (not hardcoded)."
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Implement Customer Booking flow: allow selecting a slot and submitting a booking form with Name, Phone Number, and Sport (Football/Cricket). Backend must validate slot availability at time of booking to prevent double-booking.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Booking Form: Simple form asking for Name, Phone Number, and Sport (Football/Cricket)."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Booking form collects Name, Phone Number, and Sport (Football/Cricket) in English UI.",
-        "Backend rejects bookings for already-booked/blocked slots, returning a user-displayable error.",
-        "Successful booking creates a persisted booking record tied to date+time slot."
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "text": "Add a Payment Integration placeholder step in the customer flow (UPI/Gateway): clearly show it is a placeholder and does not process real payments; continue to confirmation for now.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Payment Integration: A placeholder for UPI/Gateway payment."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Customer flow includes a payment step/screen with placeholder UI and English explanatory copy (e.g., 'Payment integration coming soon').",
-        "No external payment APIs are called.",
-        "User can proceed to confirmation after acknowledging the placeholder."
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "text": "Generate a digital receipt after a successful booking, including a unique booking ID and the booking details (date, time, sport, name, phone, price). Provide a customer-friendly confirmation page.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Confirmation: Generate a digital receipt with a booking ID."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Each booking has a unique booking ID generated by the backend.",
-        "Customer sees a confirmation/receipt view immediately after booking with the booking ID and details.",
-        "Receipt can be revisited via a dedicated view by entering booking ID (or via a direct link/route if available)."
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "text": "Implement Admin Earnings Tracker: show daily and weekly revenue totals based on completed bookings; provide basic filters for date range or week selection.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Earnings Tracker: A simple dashboard showing daily/weekly revenue."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin dashboard shows revenue totals for 'today' and 'this week' (or chosen week).",
-        "Totals are computed from persisted bookings using the stored/computed price.",
-        "UI updates when new bookings are created."
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "text": "Create a coherent, modern sporty visual theme across the app: dark mode UI with neon green accents, with consistent typography, spacing, and component styling for both Admin and Customer interfaces.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Use Tailwind CSS for a modern, sporty UI (Dark mode theme with neon green accents)"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Default appearance is dark mode with neon green accent color used consistently for primary actions and highlights.",
-        "Theme is applied across Admin and Customer screens with consistent layout structure.",
-        "User-facing text is in English."
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "text": "Add generated brand assets inspired by the uploaded SportsVilla NXT GEN imagery and use them in the UI as static frontend assets (do not serve images via the backend).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "The user has uploaded 3 image(s): Screenshot_20260208-121902_Instagram.jpg, Screenshot_20260208-121902_Instagram-1.jpg, Screenshot_20260208-121902_Instagram-2.jpg."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Generated images are added under frontend/public/assets/generated/ and referenced directly from the frontend.",
-        "App header/navbar displays the generated logo image.",
-        "Favicon is set to the generated favicon image."
+        "On the /admin-login page, when the user is authenticated and is not admin, the UI provides a primary CTA that performs a one-step reset-and-claim using the reset code input.",
+        "On success, show an English success toast/message and navigate to returnTo (if present) or /admin.",
+        "On failure, show an English error toast/message with a clear reason (e.g., invalid reset code).",
+        "React Query caches related to admin/ownership state are invalidated/refetched after success so the UI reflects the new admin status without requiring a manual refresh."
       ]
     }
   ],
   "constraints": [
-    "Backend must be implemented in Motoko in a single main actor (no Node.js backend).",
-    "No external databases (MongoDB/Firebase) may be used; persist data in canister stable storage.",
-    "Frontend must be React + TypeScript with Tailwind, Shadcn UI composition, and React Query for server state.",
-    "Do not modify files under frontend/src/components/ui or other immutable paths listed in SYSTEM_CONTEXT; only compose and consume them.",
-    "Use Internet Identity only for authentication; no third-party auth providers."
+    "Use English for all user-facing text.",
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
+    "Do not edit any frontend files under frontend/src/components/ui or other paths listed in frontend.immutablePaths.",
+    "Do not introduce email/password authentication; Internet Identity remains the only authentication mechanism."
   ],
   "nonGoals": [
-    "Implementing real UPI/payment gateway processing.",
-    "Sending SMS/WhatsApp/email confirmations.",
-    "Real-time updates via WebSockets/push notifications (use polling/re-fetch instead).",
-    "Multi-tenant support for multiple turf owners (assume a single owner/admin for this version)."
+    "Adding automatic entry of the reset code without explicit user action (e.g., auto-reading from device/clipboard) unless separately requested.",
+    "Implementing third-party authentication providers or wallet-based login.",
+    "Changing booking, pricing, slot settings, or earnings features unrelated to owner reset/claim."
   ],
   "imageRequirements": {
-    "required": [
-      "Sports-style shield logo with a cricket batter silhouette, dark green + neon green + gold palette, text 'SPORTSVILLA' and 'NXT GEN' (sportsvilla-logo.dim_512x512.png)",
-      "Square app icon variant of the shield logo, simplified for small sizes (sportsvilla-appicon.dim_256x256.png)",
-      "Favicon version of the simplified shield mark (sportsvilla-favicon.dim_64x64.png)",
-      "Subtle dark sporty background pattern (turf lines / stadium lights vibe), low-contrast (sportsvilla-bg-pattern.dim_1920x1080.png)"
-    ],
+    "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [
-      "Build a SportsVilla NXT GEN turf management web app with an Admin dashboard and Customer booking interface."
-    ],
-    "goalsToRemove": [],
-    "preferencesToAdd": [
-      "Use dark mode styling with neon green accents and a sporty visual theme; user-facing text in English."
-    ],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

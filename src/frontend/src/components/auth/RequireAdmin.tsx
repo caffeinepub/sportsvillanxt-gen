@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useIsCallerAdmin, useGetCallerUserProfile, useSaveCallerUserProfile } from '../../hooks/useQueries';
 import AccessRestrictedScreen from './AccessRestrictedScreen';
@@ -15,7 +16,8 @@ interface RequireAdminProps {
 }
 
 export default function RequireAdmin({ children }: RequireAdminProps) {
-  const { identity, login, loginStatus } = useInternetIdentity();
+  const navigate = useNavigate();
+  const { identity, isInitializing } = useInternetIdentity();
   const { data: isAdmin, isLoading: isAdminLoading } = useIsCallerAdmin();
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
   const saveProfile = useSaveCallerUserProfile();
@@ -24,6 +26,13 @@ export default function RequireAdmin({ children }: RequireAdminProps) {
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const isAuthenticated = !!identity;
+
+  // Redirect to admin login if not authenticated
+  useEffect(() => {
+    if (!isInitializing && !isAuthenticated) {
+      navigate({ to: '/admin/login', search: { returnTo: '/admin' } });
+    }
+  }, [isAuthenticated, isInitializing, navigate]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,35 +49,12 @@ export default function RequireAdmin({ children }: RequireAdminProps) {
     }
   };
 
-  // Show login prompt if not authenticated
-  if (!isAuthenticated) {
+  // Show loading while initializing or redirecting
+  if (isInitializing || !isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-md mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Login Required</CardTitle>
-              <CardDescription>
-                Please login to access the admin dashboard
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={login} 
-                disabled={loginStatus === 'logging-in'}
-                className="w-full"
-              >
-                {loginStatus === 'logging-in' ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  'Login with Internet Identity'
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     );

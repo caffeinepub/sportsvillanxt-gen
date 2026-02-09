@@ -56,9 +56,11 @@ export enum UserRole {
 }
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    backendResetAndClaimOwnership(): Promise<void>;
     blockSlot(slot: BlockedSlot): Promise<void>;
     book(timeSlot: TimeSlot, customerName: string, phoneNumber: string, sport: string): Promise<string>;
     checkAvailability(date: bigint): Promise<Array<bigint>>;
+    emergencyResetOwnership(authorizationKey: string): Promise<void>;
     getAllBookings(): Promise<Array<Booking>>;
     getBlockedSlots(): Promise<Array<BlockedSlot>>;
     getBooking(id: string): Promise<Booking>;
@@ -72,6 +74,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWeeklyEarnings(startDate: bigint, endDate: bigint): Promise<EarningsReport>;
     isCallerAdmin(): Promise<boolean>;
+    isOwnershipClaimable(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     unblockSlot(date: bigint, startHour: bigint): Promise<void>;
     updatePricingRules(rules: PricingRules): Promise<void>;

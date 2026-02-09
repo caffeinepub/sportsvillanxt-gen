@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import AppLayout from './components/layout/AppLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
 import CustomerBookingPage from './pages/customer/CustomerBookingPage';
 import PaymentPlaceholderPage from './pages/customer/PaymentPlaceholderPage';
 import BookingConfirmationPage from './pages/customer/BookingConfirmationPage';
@@ -18,6 +19,12 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: CustomerBookingPage,
+});
+
+const adminLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/login',
+  component: AdminLoginPage,
 });
 
 const adminRoute = createRoute({
@@ -50,6 +57,7 @@ const receiptLookupRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  adminLoginRoute,
   adminRoute,
   paymentRoute,
   confirmationRoute,

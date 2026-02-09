@@ -38,7 +38,7 @@ export default function LoginButton() {
       {loginStatus === 'logging-in' ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Logging in...
+          Signing in...
         </>
       ) : isAuthenticated ? (
         <>
@@ -48,7 +48,7 @@ export default function LoginButton() {
       ) : (
         <>
           <LogIn className="h-4 w-4" />
-          Login
+          Customer Login
         </>
       )}
     </Button>

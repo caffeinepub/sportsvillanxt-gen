@@ -7,9 +7,11 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
+
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+// Apply migration with-clause
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -357,5 +359,50 @@ actor {
 
   func isSameDay(date1 : Int, date2 : Int) : Bool {
     date1 == date2;
+  };
+
+  // Owner Reset and Claim Logic
+  var ownershipClaimable : Bool = true;
+
+  // Emergency reset code - should be set during canister initialization
+  // In production, this should be a secure hash or use a more sophisticated mechanism
+  let EMERGENCY_RESET_CODE : Text = "EMERGENCY_RESET_2024_SECURE_CODE";
+
+  public query func isOwnershipClaimable() : async Bool {
+    ownershipClaimable;
+  };
+
+  // Single-call API that atomically resets and claims ownership
+  // This prevents race conditions where another user could claim ownership
+  // between reset and claim operations
+  public shared ({ caller }) func backendResetAndClaimOwnership() : async () {
+    // Only current admins can reset and reclaim ownership
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can reset and claim ownership");
+    };
+    
+    // Atomically reset the ownership state and assign admin role to caller
+    // This happens in a single update call, preventing any race condition
+    ownershipClaimable := false;
+    AccessControl.assignRole(accessControlState, caller, caller, #admin);
+  };
+
+  public shared ({ caller }) func emergencyResetOwnership(authorizationKey : Text) : async () {
+    // Validate the emergency reset code
+    if (authorizationKey != EMERGENCY_RESET_CODE) {
+      Runtime.trap("Unauthorized: Invalid emergency reset code");
+    };
+
+    // Note: The AccessControl module doesn't expose a method to revoke all admin roles.
+    // In a real implementation, you would need to either:
+    // 1. Extend the AccessControl module to support role revocation
+    // 2. Reinitialize the access control state
+    // 3. Keep track of admins separately and revoke them
+    //
+    // For now, we set ownershipClaimable to true, which allows a new admin to claim.
+    // The next claim via backendClaimOwnership will assign admin role to the new caller.
+    // Previous admins will retain their role unless the AccessControl module is extended.
+
+    ownershipClaimable := true;
   };
 };

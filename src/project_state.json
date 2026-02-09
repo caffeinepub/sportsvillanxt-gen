@@ -1,15 +1,20 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 15,
   "summary": "Build a full-stack web app for SportsVilla NXT GEN turf management with two interfaces: an Owner/Admin dashboard for managing slots, bookings, pricing, and earnings; and a Customer booking page for checking availability, booking, payment placeholder, and receipt confirmation.",
   "architectural_notes": [
     "Tech stack: React frontend, Node.js backend, MongoDB or Firebase database.",
     "UI: Tailwind CSS with dark mode theme and neon green accents.",
-    "App structure: two main interfaces—Owner/Admin Dashboard and Customer Booking Page."
+    "App structure: two main interfaces—Owner/Admin Dashboard and Customer Booking Page.",
+    "Admin identifier/email provided: sportlogin8@gmail.com (to be used as the owner/admin reference for login/access context).",
+    "Admin access is gated by a stored Internet Identity owner principal; provide a controlled mechanism to reset/update the stored owner principal when the original passkey/device is unavailable.",
+    "After an owner reset, the first Internet Identity principal to log in will automatically claim ownership; if another device logs in first, the original user will be blocked with “Only owner can access”. Consider adding safeguards/UX to prevent unintended re-claiming immediately after reset."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Sports-style shield logo with a cricket batter silhouette, dark green + neon green + gold palette, text 'SPORTSVILLA' and 'NXT GEN' (sportsvilla-logo.dim_512x512.png)\n- Square app icon variant of the shield logo, simplified for small sizes (sportsvilla-appicon.dim_256x256.png)\n- Favicon version of the simplified shield mark (sportsvilla-favicon.dim_64x64.png)\n- Subtle dark sporty background pattern (turf lines / stadium lights vibe), low-contrast (sportsvilla-bg-pattern.dim_1920x1080.png)",
+  "known_issues": [
+    "User cannot access Admin because their current Internet Identity principal does not match the stored owner principal; needs owner principal reset.",
+    "Owner/admin login still failing even after 2 resets; likely owner is being re-claimed by a different Internet Identity principal/device after each reset, leaving the intended admin blocked."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-two-primary-frontend-experiences-1-an-owner-admin-dashboard-and-2-a-customer-booking-interface-with-clear-navigation-to-switch-between-them",
@@ -114,6 +119,94 @@
         "REQ-13"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-a-dedicated-admin-login-page-route-that-clearly-presents-the-owner-admin-sign-in-flow-using-internet-identity-and-provides-clear-english-user-facing-text-explaining-that-only-the-owner-can-access-admin-features",
+      "title": "Add a dedicated Admin Login page/route that clearly presents the owner/admin sign-in flow using Internet Identity, and provides clear English user-facing text explaining that only the owner can access admin features.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-admin-navigation-auth-flow-so-that-unauthenticated-users-who-attempt-to-access-the-admin-dashboard-are-directed-to-the-admin-login-screen-first-and-after-successful-internet-identity-login-they-are-returned-to-the-admin-dashboard-automatically",
+      "title": "Update admin navigation/auth flow so that unauthenticated users who attempt to access the Admin Dashboard are directed to the Admin Login screen first, and after successful Internet Identity login they are returned to the Admin Dashboard automatically.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-existing-header-navigation-provides-a-clear-entry-point-to-the-admin-login-admin-area-and-does-not-confuse-customer-login-with-owner-admin-access-copy-and-labels-must-remain-in-english",
+      "title": "Ensure the existing header navigation provides a clear entry point to the Admin Login/Admin area and does not confuse customer login with owner/admin access (copy and labels must remain in English).",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-login-page-to-display-the-admin-contact-email-sportlogin8-gmail-com-as-an-informational-note-in-english-for-example-admin-contact-sportlogin8-gmail-com-without-changing-the-internet-identity-authentication-mechanism",
+      "title": "Update the Admin Login page to display the admin contact email \"sportlogin8@gmail.com\" as an informational note in English (for example: \"Admin contact: sportlogin8@gmail.com\"), without changing the Internet Identity authentication mechanism.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-access-restricted-screen-shown-to-non-admin-users-attempting-to-access-admin-routes-to-include-the-admin-contact-email-sportlogin8-gmail-com-in-english-as-a-support-contact-hint",
+      "title": "Update the Access Restricted screen shown to non-admin users attempting to access admin routes to include the admin contact email \"sportlogin8@gmail.com\" in English as a support/contact hint.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-login-and-access-restricted-screens-to-clearly-state-in-english-that-the-admin-owner-is-sportlogin8-gmail-com-and-that-only-the-owner-can-access-the-admin-section-while-keeping-internet-identity-as-the-only-authentication-mechanism-do-not-add-email-password-login",
+      "title": "Update the Admin Login and Access Restricted screens to clearly state in English that the admin/owner is \"sportlogin8@gmail.com\" and that only the owner can access the Admin section, while keeping Internet Identity as the only authentication mechanism (do not add email/password login).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-login-page-flow-to-support-the-owner-reset-owner-claim-experience-after-internet-identity-login-do-not-blindly-redirect-instead-check-admin-status-and-a-redirect-to-admin-only-if-the-caller-is-admin-b-if-no-owner-exists-show-a-clear-english-prompt-and-cta-to-claim-ownership-c-if-an-owner-exists-and-the-caller-is-not-admin-show-an-owner-only-access-message-including-the-owner-reference-sportlogin8-gmail-com",
+      "title": "Update the Admin Login page flow to support the owner-reset/owner-claim experience: after Internet Identity login, do not blindly redirect; instead, check admin status and (a) redirect to /admin only if the caller is admin, (b) if no owner exists, show a clear English prompt and CTA to claim ownership, (c) if an owner exists and the caller is not admin, show an owner-only access message including the owner reference \"sportlogin8@gmail.com\".",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-frontend-update-admin-login-page-logic-to-use-the-new-backend-ownership-claimable-query-instead-of-assuming-an-owner-exists-whenever-the-caller-is-not-admin-show-the-correct-ui-state-a-if-caller-is-admin-redirect-to-admin-or-returnto-b-if-caller-is-not-admin-and-ownership-is-claimable-show-the-claim-ownership-card-c-if-caller-is-not-admin-and-ownership-is-not-claimable-show-the-access-restricted-card",
+      "title": "Frontend: Update Admin Login page logic to use the new backend ownership-claimable query instead of assuming an owner exists whenever the caller is not admin. Show the correct UI state: (a) if caller is admin, redirect to /admin (or returnTo), (b) if caller is not admin and ownership is claimable, show the “Claim Ownership” card, (c) if caller is not admin and ownership is not claimable, show the “Access Restricted” card.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-frontend-add-an-emergency-reset-owner-section-on-the-admin-login-page-visible-when-the-user-is-authenticated-but-not-admin-that-allows-entering-a-reset-code-and-calling-the-new-backend-emergency-reset-api-then-re-checking-ownership-status-so-the-user-can-proceed-to-claim-ownership",
+      "title": "Frontend: Add an “Emergency Reset Owner” section on the Admin Login page (visible when the user is authenticated but not admin) that allows entering a reset code and calling the new backend emergency reset API, then re-checking ownership status so the user can proceed to claim ownership.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-frontend-hooks-extend-react-query-hooks-in-frontend-src-hooks-usequeries-ts-to-include-1-a-query-hook-for-ownership-claimable-status-and-2-a-mutation-hook-to-call-the-emergency-owner-reset-api-ensure-related-cached-queries-e-g-iscalleradmin-and-ownership-claimable-status-are-invalidated-refetched-on-success",
+      "title": "Frontend hooks: Extend React Query hooks in frontend/src/hooks/useQueries.ts to include (1) a query hook for ownership-claimable status and (2) a mutation hook to call the emergency owner reset API; ensure related cached queries (e.g., isCallerAdmin and ownership-claimable status) are invalidated/refetched on success.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-frontend-update-the-admin-login-page-to-support-a-one-step-reset-and-claim-ownership-action-using-the-entered-reset-code-for-authenticated-non-admin-users-and-redirect-to-the-admin-dashboard-on-success",
+      "title": "Frontend: Update the Admin Login page to support a one-step \"Reset and Claim Ownership\" action (using the entered reset code) for authenticated non-admin users, and redirect to the Admin Dashboard on success.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -169,6 +262,58 @@
       "id": "AR-9",
       "summary": "Customer Booking Page: booking confirmation with digital receipt + booking ID",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Implement Admin login/authentication flow to access the Owner/Admin Dashboard",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Add an admin/owner identity reset flow to update the stored owner principal (so a new Internet Identity can be set as the owner)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add a backend owner-reset capability that clears the currently stored Admin/Owner principal so a new Internet Identity principal can become the owner/admin.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Implement an explicit backend ownership-claim API that allows setting the owner/admin principal only when no owner/admin is currently set (post-reset or first initialization).",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Backend: Add a public query API to determine whether ownership is currently claimable (i.e., whether an owner exists) so the frontend can correctly decide between showing “Claim Ownership” vs “Access Restricted”.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Backend: Add an emergency owner-reset API that can be invoked when the admin is locked out, using a reset code. This API must (1) set ownershipClaimable back to true and (2) revoke/clear any previously assigned admin ownership so that the next successful claim is the only admin.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Backend: Add a single-call API that resets admin ownership and immediately assigns ownership to the caller in the same update call, to prevent the situation where the user resets ownership but another Internet Identity claims it first (\"ownership already claimed\").",
+      "reqIds": [
+        "REQ-28"
+      ],
       "status": "pending"
     }
   ],
