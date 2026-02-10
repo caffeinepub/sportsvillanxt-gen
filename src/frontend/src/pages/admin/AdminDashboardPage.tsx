@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Calendar, DollarSign } from 'lucide-react';
 import SlotSettingsForm from '../../components/admin/SlotSettingsForm';
 import PricingRulesForm from '../../components/admin/PricingRulesForm';
+import EmergencyOwnershipResetCard from '../../components/admin/EmergencyOwnershipResetCard';
 import AdminBookingCalendar from '../../components/admin/AdminBookingCalendar';
 import EarningsTracker from '../../components/admin/EarningsTracker';
 
@@ -40,6 +41,9 @@ export default function AdminDashboardPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <SlotSettingsForm />
             <PricingRulesForm />
+          </div>
+          <div className="max-w-2xl">
+            <EmergencyOwnershipResetCard />
           </div>
         </TabsContent>
 

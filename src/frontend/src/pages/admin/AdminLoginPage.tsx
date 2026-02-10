@@ -4,6 +4,8 @@ import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useIsCallerAdmin, useIsOwnershipClaimable, useClaimOwnership, useResetAndClaimOwnership } from '../../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Loader2, ShieldCheck, ShieldAlert, UserPlus, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,6 +21,7 @@ export default function AdminLoginPage() {
 
   const [checkingAccess, setCheckingAccess] = useState(false);
   const [accessChecked, setAccessChecked] = useState(false);
+  const [resetCode, setResetCode] = useState('');
 
   const isAuthenticated = !!identity;
   const isLoggingIn = loginStatus === 'logging-in';
@@ -76,8 +79,13 @@ export default function AdminLoginPage() {
   };
 
   const handleResetAndClaim = async () => {
+    if (!resetCode.trim()) {
+      toast.error('Please enter a reset code');
+      return;
+    }
+
     try {
-      await resetAndClaim.mutateAsync();
+      await resetAndClaim.mutateAsync(resetCode);
       toast.success('Ownership reset and claimed successfully! You are now the admin.');
       
       // Refetch admin status and redirect
@@ -91,6 +99,7 @@ export default function AdminLoginPage() {
       const errorMessage = error.message || 'Failed to reset and claim ownership';
       toast.error(errorMessage);
       
+      // Don't redirect on error
       // Refetch both statuses in case something changed
       await refetchAdminStatus();
       await refetchOwnershipClaimable();
@@ -162,8 +171,52 @@ export default function AdminLoginPage() {
   }
 
   // Authenticated but not admin - check if ownership is claimable
+  if (isOwnershipClaimable === true) {
+    // Ownership is claimable - show claim UI
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-md mx-auto">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <UserPlus className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle>Claim Ownership</CardTitle>
+              <CardDescription>
+                No owner has been set yet. You can claim ownership of this application.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleClaimOwnership} 
+                disabled={claimOwnership.isPending}
+                className="w-full"
+                size="lg"
+              >
+                {claimOwnership.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Claiming...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Claim Ownership
+                  </>
+                )}
+              </Button>
+              <p className="mt-4 text-xs text-center text-muted-foreground">
+                By claiming ownership, you will become the admin and have full access to the admin dashboard.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated but not admin and ownership is not claimable - show reset and claim UI
   if (isOwnershipClaimable === false) {
-    // Owner already exists, show access restricted with reset and claim option
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto space-y-6">
@@ -174,68 +227,75 @@ export default function AdminLoginPage() {
               </div>
               <CardTitle className="text-destructive">Access Restricted</CardTitle>
               <CardDescription>
-                Only the owner can access the admin dashboard. The owner/admin is <span className="font-semibold text-foreground">sportlogin8@gmail.com</span>.
+                This admin dashboard is restricted to the owner only. The current owner/admin is <span className="font-semibold text-foreground">sportlogin8@gmail.com</span>.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg bg-muted p-4 text-sm">
+                <p className="font-medium mb-2">Why can't I access this?</p>
+                <p className="text-muted-foreground">
+                  Only the designated owner can access the admin dashboard. This ensures secure management of bookings, settings, and earnings.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Need access?</p>
+                <p className="text-sm text-muted-foreground">
+                  Contact the owner at <span className="font-medium text-foreground">sportlogin8@gmail.com</span> to request access or transfer ownership.
+                </p>
+              </div>
               <Button 
                 onClick={() => navigate({ to: '/' })}
                 variant="outline"
                 className="w-full"
               >
-                Go to Booking Page
+                Return to Booking Page
               </Button>
-              <div className="mt-4 space-y-2 text-center">
-                <p className="text-xs text-muted-foreground">
-                  If you believe you should have access, please contact the owner.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Owner/Admin contact: <span className="font-medium">sportlogin8@gmail.com</span>
-                </p>
-              </div>
             </CardContent>
           </Card>
 
-          {/* Reset and Claim Section */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <KeyRound className="h-5 w-5 text-muted-foreground" />
-                <CardTitle className="text-lg">Reset and Claim Ownership</CardTitle>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <KeyRound className="h-8 w-8 text-primary" />
               </div>
+              <CardTitle>Reset and Claim Ownership</CardTitle>
               <CardDescription>
-                If you are the rightful owner, you can reset and claim ownership in one step. This will make you the new admin.
+                If you have the emergency reset code, you can reset and claim ownership in one step.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="rounded-lg bg-muted p-4 text-sm">
-                  <p className="font-medium mb-2">What happens when you reset and claim?</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Ownership will be reset</li>
-                    <li>You will immediately become the new admin/owner</li>
-                    <li>You will have full access to the admin dashboard</li>
-                    <li>This action cannot be undone</li>
-                  </ul>
-                </div>
-                
-                <Button 
-                  onClick={handleResetAndClaim}
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="resetCode">Emergency Reset Code</Label>
+                <Input
+                  id="resetCode"
+                  type="text"
+                  placeholder="Enter reset code"
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
                   disabled={resetAndClaim.isPending}
-                  className="w-full"
-                  variant="destructive"
-                  size="lg"
-                >
-                  {resetAndClaim.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Resetting and claiming...
-                    </>
-                  ) : (
-                    'Reset and Claim Ownership'
-                  )}
-                </Button>
+                />
+                <p className="text-xs text-muted-foreground">
+                  This code is provided by the system administrator for emergency access recovery.
+                </p>
               </div>
+              <Button 
+                onClick={handleResetAndClaim} 
+                disabled={resetAndClaim.isPending || !resetCode.trim()}
+                className="w-full"
+                size="lg"
+              >
+                {resetAndClaim.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Resetting and Claiming...
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    Reset and Claim Ownership
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -243,55 +303,15 @@ export default function AdminLoginPage() {
     );
   }
 
-  // Authenticated, not admin, and ownership is claimable - show claim ownership
+  // Fallback loading state
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-md mx-auto">
         <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <UserPlus className="h-8 w-8 text-primary" />
-            </div>
-            <CardTitle>Claim Ownership</CardTitle>
-            <CardDescription>
-              No owner has been set for this admin dashboard. You can claim ownership to become the admin.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="rounded-lg bg-muted p-4 text-sm">
-                <p className="font-medium mb-2">What happens when you claim ownership?</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>You will become the admin/owner</li>
-                  <li>You will have full access to the admin dashboard</li>
-                  <li>You can manage bookings, settings, and earnings</li>
-                  <li>Only one owner can exist at a time</li>
-                </ul>
-              </div>
-              
-              <Button 
-                onClick={handleClaimOwnership} 
-                disabled={claimOwnership.isPending}
-                className="w-full"
-                size="lg"
-              >
-                {claimOwnership.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Claiming ownership...
-                  </>
-                ) : (
-                  'Claim Ownership'
-                )}
-              </Button>
-
-              <Button 
-                onClick={() => navigate({ to: '/' })}
-                variant="outline"
-                className="w-full"
-              >
-                Go to Booking Page
-              </Button>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading...</p>
             </div>
           </CardContent>
         </Card>

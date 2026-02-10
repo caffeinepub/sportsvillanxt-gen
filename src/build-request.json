@@ -1,57 +1,56 @@
 {
   "kind": "build_request",
-  "title": "Make owner reset reliable by adding an atomic reset-and-claim flow",
+  "title": "Add emergency ownership reset option in admin settings and harden post-reset authorization",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-28",
-      "text": "Backend: Add a single-call API that resets admin ownership and immediately assigns ownership to the caller in the same update call, to prevent the situation where the user resets ownership but another Internet Identity claims it first (\"ownership already claimed\").",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-5"
-        ],
-        "quotes": [
-          "Reset again"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new backend update method exists that takes the emergency reset code and, if valid, performs: (1) reset ownership to claimable, then (2) claim ownership for the current caller, then (3) returns success, all in one update call.",
-        "If the emergency reset code is invalid, the method traps with an English error message indicating the reset code is invalid.",
-        "If the reset-and-claim call succeeds, subsequent calls to the existing isOwnershipClaimable() return false.",
-        "After a successful reset-and-claim, the caller is recognized as admin by the backend admin check used by the frontend (useIsCallerAdmin)."
-      ]
-    },
-    {
-      "id": "REQ-29",
-      "text": "Frontend: Update the Admin Login page to support a one-step \"Reset and Claim Ownership\" action (using the entered reset code) for authenticated non-admin users, and redirect to the Admin Dashboard on success.",
+      "id": "REQ-1",
+      "text": "Add an \"Emergency Ownership Reset\" option to the Admin Dashboard \"Settings\" tab that lets an admin enter an emergency reset code and trigger an ownership reset (calling the backend emergency reset API).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-1"
         ],
         "quotes": [
-          "Reset again"
+          "Reset owner ship add option emergency reset code settings"
         ]
       },
       "acceptanceCriteria": [
-        "On the /admin-login page, when the user is authenticated and is not admin, the UI provides a primary CTA that performs a one-step reset-and-claim using the reset code input.",
-        "On success, show an English success toast/message and navigate to returnTo (if present) or /admin.",
-        "On failure, show an English error toast/message with a clear reason (e.g., invalid reset code).",
-        "React Query caches related to admin/ownership state are invalidated/refetched after success so the UI reflects the new admin status without requiring a manual refresh."
+        "Admin Dashboard > Settings includes a new card/section labeled \"Emergency Ownership Reset\"",
+        "The section includes an input labeled \"Emergency Reset Code\" and a primary action button labeled \"Reset Ownership\"",
+        "Clicking \"Reset Ownership\" calls the existing React Query mutation that invokes the backend emergency reset API (no backend changes required for the call itself)",
+        "On success, the UI shows a success toast/message indicating ownership has been reset and is now claimable",
+        "On error (e.g., invalid code), the UI shows an English error message and does not navigate away"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "After an emergency ownership reset, ensure previous admin roles do not continue to grant admin access; admin authorization must not fall back to legacy roles when no current owner is set.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Reset owner ship add option emergency reset code settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After calling emergencyResetOwnership with a valid code, a principal that was previously the owner/admin cannot access admin-only backend methods unless they successfully claim ownership again",
+        "When currentOwner is null, admin-only backend methods are not accessible based solely on historical role assignments (i.e., no fallback that keeps old admins active)",
+        "The existing claimNewOwnership flow still works when ownership is claimable and assigns the caller as the sole admin owner"
       ]
     }
   ],
   "constraints": [
-    "Use English for all user-facing text.",
-    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
-    "Do not edit any frontend files under frontend/src/components/ui or other paths listed in frontend.immutablePaths.",
-    "Do not introduce email/password authentication; Internet Identity remains the only authentication mechanism."
+    "Backend must remain a single Motoko actor in backend/main.mo",
+    "Do not edit files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT",
+    "Use English for all user-facing text"
   ],
   "nonGoals": [
-    "Adding automatic entry of the reset code without explicit user action (e.g., auto-reading from device/clipboard) unless separately requested.",
-    "Implementing third-party authentication providers or wallet-based login.",
-    "Changing booking, pricing, slot settings, or earnings features unrelated to owner reset/claim."
+    "Implement third-party authentication or any auth provider other than Internet Identity",
+    "Add external database storage or additional backend services",
+    "Expose or display the hard-coded emergency reset code value in the UI"
   ],
   "imageRequirements": {
     "required": [],

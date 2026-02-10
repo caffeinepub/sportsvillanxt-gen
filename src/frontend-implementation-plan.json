@@ -1,32 +1,28 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend: Admin Login one-step Reset-and-Claim Ownership",
+  "title": "Emergency ownership reset UI in admin settings",
   "requirements": [
     {
-      "id": "REQ-29",
-      "summary": "Update Admin Login to support a one-step reset-and-claim ownership action for authenticated non-admin users, with success redirect and cache invalidation.",
+      "id": "REQ-1",
+      "summary": "Add an Emergency Ownership Reset card to Admin Dashboard Settings that accepts a reset code and triggers the existing emergency reset mutation with success/error messaging.",
       "acceptanceCriteria": [
-        "On the /admin-login page, when the user is authenticated and is not admin, the UI provides a primary CTA that performs a one-step reset-and-claim using the reset code input.",
-        "On success, show an English success toast/message and navigate to returnTo (if present) or /admin.",
-        "On failure, show an English error toast/message with a clear reason (e.g., invalid reset code).",
-        "React Query caches related to admin/ownership state are invalidated/refetched after success so the UI reflects the new admin status without requiring a manual refresh."
+        "Admin Dashboard > Settings includes a new card/section labeled \"Emergency Ownership Reset\"",
+        "The section includes an input labeled \"Emergency Reset Code\" and a primary action button labeled \"Reset Ownership\"",
+        "Clicking \"Reset Ownership\" calls the existing React Query mutation that invokes the backend emergency reset API (no backend changes required for the call itself)",
+        "On success, the UI shows a success toast/message indicating ownership has been reset and is now claimable",
+        "On error (e.g., invalid code), the UI shows an English error message and does not navigate away"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add a new React Query mutation hook for the atomic reset-and-claim flow that calls the backend capability for reset-and-claim (using the user-entered reset code) and, on success, invalidates/refetches ownership/admin-related caches (at minimum: ['isCallerAdmin'], ['ownershipClaimable']). Ensure errors are surfaced as clear English messages suitable for toasts. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
+          "operation": "create",
+          "description": "Create an admin Settings card labeled \"Emergency Ownership Reset\" containing an \"Emergency Reset Code\" input and a primary \"Reset Ownership\" button. Use the existing `useEmergencyResetOwnership` React Query mutation to trigger the backend capability; show a success toast (ownership reset and now claimable) on success and show the mutation error message on failure without navigation. Use the existing authorization/role-gated UI approach (Admin area already protected by RequireAdmin). Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
           "operation": "modify",
-          "description": "Update the authenticated non-admin UI to offer a single primary CTA labeled \"Reset and Claim Ownership\" that uses the reset code input and triggers the new reset-and-claim mutation. On success, show an English success toast and navigate to returnTo (if present) or /admin; on failure, show an English error toast. After success, ensure the UI updates without manual refresh by relying on query invalidation and/or explicit refetch of admin/ownership queries. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Update the frontend backend type declarations (as needed) so the reset-and-claim backend function signature matches the new API used by the Admin Login page (including passing the reset code), preventing type errors and ensuring the mutation can call the backend capability from TypeScript."
+          "description": "Wire the new `EmergencyOwnershipResetCard` into the Admin Dashboard \"Settings\" tab layout so it renders alongside the existing settings cards (SlotSettingsForm, PricingRulesForm) and is reachable via the existing Settings tab navigation. Verify the component's usage instructions before implementing."
         }
       ]
     }

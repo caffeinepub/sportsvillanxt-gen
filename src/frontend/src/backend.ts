@@ -139,10 +139,11 @@ export enum UserRole {
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    backendResetAndClaimOwnership(): Promise<void>;
     blockSlot(slot: BlockedSlot): Promise<void>;
     book(timeSlot: TimeSlot, customerName: string, phoneNumber: string, sport: string): Promise<string>;
     checkAvailability(date: bigint): Promise<Array<bigint>>;
+    claimNewOwnership(): Promise<void>;
+    clearExplicitRoles(): Promise<void>;
     emergencyResetOwnership(authorizationKey: string): Promise<void>;
     getAllBookings(): Promise<Array<Booking>>;
     getBlockedSlots(): Promise<Array<BlockedSlot>>;
@@ -158,6 +159,7 @@ export interface backendInterface {
     getWeeklyEarnings(startDate: bigint, endDate: bigint): Promise<EarningsReport>;
     isCallerAdmin(): Promise<boolean>;
     isOwnershipClaimable(): Promise<boolean>;
+    postMigrationClearExplicitRoles(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     unblockSlot(date: bigint, startHour: bigint): Promise<void>;
     updatePricingRules(rules: PricingRules): Promise<void>;
@@ -191,20 +193,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
-            return result;
-        }
-    }
-    async backendResetAndClaimOwnership(): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.backendResetAndClaimOwnership();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.backendResetAndClaimOwnership();
             return result;
         }
     }
@@ -247,6 +235,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.checkAvailability(arg0);
+            return result;
+        }
+    }
+    async claimNewOwnership(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.claimNewOwnership();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.claimNewOwnership();
+            return result;
+        }
+    }
+    async clearExplicitRoles(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearExplicitRoles();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearExplicitRoles();
             return result;
         }
     }
@@ -457,6 +473,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isOwnershipClaimable();
+            return result;
+        }
+    }
+    async postMigrationClearExplicitRoles(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.postMigrationClearExplicitRoles();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.postMigrationClearExplicitRoles();
             return result;
         }
     }

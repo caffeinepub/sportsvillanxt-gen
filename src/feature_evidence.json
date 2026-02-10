@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-frontend-update-the-admin-login-page-to-support-a-one-step-reset-and-claim-ownership-action-using-the-entered-reset-code-for-authenticated-non-admin-users-and-redirect-to-the-admin-dashboard-on-success",
-      "featureTitle": "Frontend: Update the Admin Login page to support a one-step \"Reset and Claim Ownership\" action (using the entered reset code) for authenticated non-admin users, and redirect to the Admin Dashboard on success.",
+      "featureId": "feature-add-an-emergency-ownership-reset-option-to-the-admin-dashboard-settings-tab-that-lets-an-admin-enter-an-emergency-reset-code-and-trigger-an-ownership-reset-calling-the-backend-emergency-reset-api",
+      "featureTitle": "Add an \"Emergency Ownership Reset\" option to the Admin Dashboard \"Settings\" tab that lets an admin enter an emergency reset code and trigger an ownership reset (calling the backend emergency reset API).",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
+        "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
+        "frontend/src/pages/admin/AdminDashboardPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,7 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-29"
+        "REQ-1"
       ],
       "confidence": "high"
     }

@@ -1,18 +1,20 @@
 import Array "mo:core/Array";
 import Int "mo:core/Int";
-import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-
+import Migration "migration";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
-// Apply migration with-clause
+(with migration = Migration.run)
 actor {
+  var ownershipClaimable : Bool = true;
+  var currentOwner : ?Principal = null;
+
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
@@ -23,6 +25,21 @@ actor {
 
   let userProfiles = Map.empty<Principal, UserProfile>();
 
+  func isCurrentOwner(caller : Principal) : Bool {
+    switch (currentOwner) {
+      case (?owner) { Principal.equal(caller, owner) };
+      case (null) { false };
+    };
+  };
+
+  // Only check current owner for admin - no fallback to AccessControl roles
+  func isValidAdmin(caller : Principal) : Bool {
+    switch (currentOwner) {
+      case (?owner) { Principal.equal(caller, owner) };
+      case (null) { false }; // No fallback to roles if no owner after migration
+    };
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
@@ -31,7 +48,7 @@ actor {
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (caller != user and not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
     };
     userProfiles.get(user);
@@ -57,7 +74,7 @@ actor {
   };
 
   public shared ({ caller }) func updateSlotSettings(settings : SlotSettings) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can update slot settings");
     };
     slotSettings := settings;
@@ -84,7 +101,7 @@ actor {
   };
 
   public shared ({ caller }) func updatePricingRules(rules : PricingRules) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can update pricing rules");
     };
     pricingRules := rules;
@@ -107,7 +124,7 @@ actor {
   };
 
   public shared ({ caller }) func blockSlot(slot : BlockedSlot) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can block slots");
     };
     let key = makeBlockedSlotKey(slot.date, slot.startHour);
@@ -115,7 +132,7 @@ actor {
   };
 
   public shared ({ caller }) func unblockSlot(date : Int, startHour : Int) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can unblock slots");
     };
     let key = makeBlockedSlotKey(date, startHour);
@@ -270,7 +287,7 @@ actor {
   public query ({ caller }) func getBooking(id : Text) : async Booking {
     switch (bookings.get(id)) {
       case (?booking) {
-        if (booking.bookedBy != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (booking.bookedBy != caller and not isValidAdmin(caller)) {
           Runtime.trap("Unauthorized: Can only view your own bookings");
         };
         booking;
@@ -289,7 +306,7 @@ actor {
   };
 
   public shared ({ caller }) func getAllBookings() : async [Booking] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can view all bookings");
     };
 
@@ -297,7 +314,7 @@ actor {
   };
 
   public shared ({ caller }) func getBookingsCount() : async Nat {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can view booking statistics");
     };
 
@@ -312,7 +329,7 @@ actor {
   };
 
   public shared ({ caller }) func getDailyEarnings(date : Int) : async EarningsReport {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can view earnings");
     };
 
@@ -335,7 +352,7 @@ actor {
   };
 
   public shared ({ caller }) func getWeeklyEarnings(startDate : Int, endDate : Int) : async EarningsReport {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can view earnings");
     };
 
@@ -361,48 +378,45 @@ actor {
     date1 == date2;
   };
 
-  // Owner Reset and Claim Logic
-  var ownershipClaimable : Bool = true;
-
-  // Emergency reset code - should be set during canister initialization
-  // In production, this should be a secure hash or use a more sophisticated mechanism
   let EMERGENCY_RESET_CODE : Text = "EMERGENCY_RESET_2024_SECURE_CODE";
 
   public query func isOwnershipClaimable() : async Bool {
     ownershipClaimable;
   };
 
-  // Single-call API that atomically resets and claims ownership
-  // This prevents race conditions where another user could claim ownership
-  // between reset and claim operations
-  public shared ({ caller }) func backendResetAndClaimOwnership() : async () {
-    // Only current admins can reset and reclaim ownership
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can reset and claim ownership");
+  // Non-admin initial ownership claiming - only works when ownership is claimable
+  public shared ({ caller }) func claimNewOwnership() : async () {
+    if (not ownershipClaimable) {
+      Runtime.trap("Unauthorized: Ownership cannot currently be claimed");
     };
-    
-    // Atomically reset the ownership state and assign admin role to caller
-    // This happens in a single update call, preventing any race condition
+
+    currentOwner := ?caller;
     ownershipClaimable := false;
+
     AccessControl.assignRole(accessControlState, caller, caller, #admin);
   };
 
+  // Emergency reset (makes ownership claimable again)
+  // After this is called, currentOwner is null and previous admin roles do NOT grant access
+  // Only claimNewOwnership() can establish a new owner
   public shared ({ caller }) func emergencyResetOwnership(authorizationKey : Text) : async () {
-    // Validate the emergency reset code
     if (authorizationKey != EMERGENCY_RESET_CODE) {
       Runtime.trap("Unauthorized: Invalid emergency reset code");
     };
 
-    // Note: The AccessControl module doesn't expose a method to revoke all admin roles.
-    // In a real implementation, you would need to either:
-    // 1. Extend the AccessControl module to support role revocation
-    // 2. Reinitialize the access control state
-    // 3. Keep track of admins separately and revoke them
-    //
-    // For now, we set ownershipClaimable to true, which allows a new admin to claim.
-    // The next claim via backendClaimOwnership will assign admin role to the new caller.
-    // Previous admins will retain their role unless the AccessControl module is extended.
-
+    currentOwner := null;
     ownershipClaimable := true;
+  };
+
+  public shared ({ caller }) func clearExplicitRoles() : async () {
+    if (not isValidAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only admins can clear explicit roles");
+    };
+  };
+
+  public shared ({ caller }) func postMigrationClearExplicitRoles() : async () {
+    if (not isValidAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only admins can perform post-migration role clearing");
+    };
   };
 };

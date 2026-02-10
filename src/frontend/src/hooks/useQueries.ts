@@ -74,12 +74,12 @@ export function useClaimOwnership() {
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not available');
       try {
-        // Use backendResetAndClaimOwnership for initial claim when ownership is claimable
-        await actor.backendResetAndClaimOwnership();
+        // Use claimNewOwnership for initial claim when ownership is claimable
+        await actor.claimNewOwnership();
       } catch (error: any) {
         // Extract clean error message from backend trap
         const errorMessage = error.message || String(error);
-        if (errorMessage.includes('Ownership has already been claimed')) {
+        if (errorMessage.includes('Ownership cannot currently be claimed')) {
           throw new Error('Ownership has already been claimed by another user');
         } else if (errorMessage.includes('Unauthorized')) {
           throw new Error('Ownership has already been claimed');
@@ -100,15 +100,20 @@ export function useResetAndClaimOwnership() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (resetCode: string) => {
       if (!actor) throw new Error('Actor not available');
       try {
-        await actor.backendResetAndClaimOwnership();
+        // First, reset ownership with the code
+        await actor.emergencyResetOwnership(resetCode);
+        // Then claim the now-available ownership
+        await actor.claimNewOwnership();
       } catch (error: any) {
         // Extract clean error message from backend trap
         const errorMessage = error.message || String(error);
-        if (errorMessage.includes('Unauthorized')) {
-          throw new Error('You must be an admin to reset and claim ownership');
+        if (errorMessage.includes('Invalid emergency reset code')) {
+          throw new Error('Invalid reset code. Please check and try again.');
+        } else if (errorMessage.includes('Unauthorized')) {
+          throw new Error('Invalid reset code');
         }
         throw new Error('Failed to reset and claim ownership. Please try again.');
       }

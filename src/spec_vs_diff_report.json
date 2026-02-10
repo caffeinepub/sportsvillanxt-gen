@@ -1,65 +1,35 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T14:26:05.120Z",
-  "summary": "The diff does not provide evidence that the requested atomic reset-and-claim flow (with reset code parameter) was implemented in the backend, and the frontend changes shown call a reset-and-claim method without passing the entered reset code. Several unrelated features (user profiles, slot/pricing/blocking, routing/layout/auth guard text) appear in the diff beyond the scope of REQ-28/REQ-29.",
+  "generatedAt": "2026-02-10T17:10:43.015Z",
+  "summary": "REQ-1 appears implemented via a new EmergencyOwnershipResetCard added to the Admin Dashboard Settings tab, with labeled input/button and toast-based success/error handling. REQ-2 is partially evidenced by backend authorization hardening (admin checks rely only on currentOwner with no legacy-role fallback when currentOwner is null), but the diff excerpt is truncated and does not show the emergency reset and claim flows themselves, so post-reset behavior and sole-admin assignment cannot be fully verified from the provided evidence.",
   "missing_requirements": [
     {
-      "id": "REQ-28",
-      "requirement": "Backend: Add a single-call update API that takes the emergency reset code and, if valid, resets ownership to claimable and immediately claims ownership for the caller in the same update call; traps with an English 'invalid reset code' message when invalid; ensures isOwnershipClaimable() becomes false after success and caller becomes admin for useIsCallerAdmin checks.",
-      "reason": "backend/main.mo is truncated and the shown portion contains no ownership reset/claim API or any method taking an emergency reset code. Frontend code calls actor.backendResetAndClaimOwnership() with no reset code argument, which does not match the required backend method signature/behavior.",
+      "id": "REQ-2",
+      "requirement": "After calling emergencyResetOwnership with a valid code, a principal that was previously the owner/admin cannot access admin-only backend methods unless they successfully claim ownership again; and the existing claimNewOwnership flow still works when ownership is claimable and assigns the caller as the sole admin owner.",
+      "reason": "The diff shows admin authorization now depends only on currentOwner (no fallback when null), but the provided backend/main.mo excerpt is truncated and does not include the implementations of emergencyResetOwnership and claimNewOwnership (or how AccessControl roles are cleared/assigned). Without those sections, the post-reset lockout and sole-admin assignment cannot be confirmed.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-29",
-      "requirement": "Frontend: On /admin-login for authenticated non-admin users, provide a primary one-step 'Reset and Claim Ownership' action that uses the entered reset code, shows English success/error toasts, navigates to returnTo or /admin on success, and invalidates/refetches admin/ownership React Query caches.",
-      "reason": "AdminLoginPage and the reset-and-claim hook shown do not accept or pass a reset code value; resetAndClaim.mutateAsync() is called with no arguments and the hook calls actor.backendResetAndClaimOwnership() without parameters. While success/error toasts and navigation appear, the required 'using the entered reset code input' is not evidenced in the shown diff.",
-      "evidence": [
-        "frontend/src/pages/admin/AdminLoginPage.tsx",
-        "frontend/src/hooks/useQueries.ts"
+        "backend/main.mo (truncated; shows isValidAdmin change but not emergencyResetOwnership/claimNewOwnership implementations)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "User profile storage and related backend/query hooks (get/save caller profile, permissions checks) added/modified.",
-      "reason": "Not requested by REQ-28/REQ-29 and unrelated to owner reset/claim flow.",
+      "description": "Introduced a backend migration module and wired it into the actor via `with migration = Migration.run`, despite no explicit requirement for migrations.",
+      "reason": "BuildRequest did not request a migration system or migration file; only backend authorization hardening and a frontend settings UI were requested.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "description": "Slot settings, pricing rules, blocked slots backend logic shown/modified.",
-      "reason": "Non-goals explicitly include not changing booking/pricing/slot settings features unrelated to owner reset/claim.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Frontend routing/layout/auth-guard related additions referenced in summaries (e.g., new /admin/login route, RequireAdmin behavior, AccessRestrictedScreen messaging).",
-      "reason": "Not requested as part of REQ-28/REQ-29; also includes content (owner contact email) that is outside the reset-and-claim requirement.",
-      "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Changed claimOwnership hook to call backendResetAndClaimOwnership (and added error remapping) rather than a dedicated claim method.",
-      "reason": "REQ-28/REQ-29 only request a new reset-and-claim API and corresponding admin-login UI action; altering the existing claim flow is not requested.",
-      "evidence": [
-        "frontend/src/hooks/useQueries.ts"
+        "backend/migration.mo",
+        "backend/main.mo (imports Migration and uses `with migration = Migration.run`)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
     "project_state.json"
   ]
 }
