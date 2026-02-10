@@ -1,35 +1,37 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T17:10:43.015Z",
-  "summary": "REQ-1 appears implemented via a new EmergencyOwnershipResetCard added to the Admin Dashboard Settings tab, with labeled input/button and toast-based success/error handling. REQ-2 is partially evidenced by backend authorization hardening (admin checks rely only on currentOwner with no legacy-role fallback when currentOwner is null), but the diff excerpt is truncated and does not show the emergency reset and claim flows themselves, so post-reset behavior and sole-admin assignment cannot be fully verified from the provided evidence.",
+  "generatedAt": "2026-02-10T17:30:38.790Z",
+  "summary": "REQ-1 (set emergency ownership reset code to \"73024141\" in backend/main.mo and preserve trap behavior for other codes) is not evidenced in the provided diff excerpt. The diff also includes changes not requested (project_state.json feature-request bookkeeping and backend authorization logic changes unrelated to the reset code).",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "After calling emergencyResetOwnership with a valid code, a principal that was previously the owner/admin cannot access admin-only backend methods unless they successfully claim ownership again; and the existing claimNewOwnership flow still works when ownership is claimable and assigns the caller as the sole admin owner.",
-      "reason": "The diff shows admin authorization now depends only on currentOwner (no fallback when null), but the provided backend/main.mo excerpt is truncated and does not include the implementations of emergencyResetOwnership and claimNewOwnership (or how AccessControl roles are cleared/assigned). Without those sections, the post-reset lockout and sole-admin assignment cannot be confirmed.",
+      "id": "REQ-1",
+      "requirement": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\" (and other codes trap with \"Unauthorized: Invalid emergency reset code\"), and the successful call sets currentOwner to null and ownershipClaimable to true.",
+      "reason": "In the provided truncated backend/main.mo diff excerpt, there is no visible emergencyResetOwnership function nor any constant/key being set to \"73024141\", and no evidence of the required success/trap behavior change.",
       "evidence": [
-        "backend/main.mo (truncated; shows isValidAdmin change but not emergencyResetOwnership/claimNewOwnership implementations)"
+        "backend/main.mo (truncated excerpt shows no emergencyResetOwnership or reset-code constant)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Introduced a backend migration module and wired it into the actor via `with migration = Migration.run`, despite no explicit requirement for migrations.",
-      "reason": "BuildRequest did not request a migration system or migration file; only backend authorization hardening and a frontend settings UI were requested.",
+      "description": "Added/updated project tracking metadata for feature requests (AR-1/AR-2) and architectural notes in project_state.json.",
+      "reason": "The BuildRequest only asks for a backend constant change; it does not request updating project_state.json or adding feature-request metadata.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (imports Migration and uses `with migration = Migration.run`)"
+        "project_state.json"
+      ]
+    },
+    {
+      "description": "Changes to admin validation / authorization behavior (e.g., isValidAdmin only checks currentOwner with no fallback to AccessControl roles) and related authorization checks shown in backend/main.mo excerpt.",
+      "reason": "The BuildRequest explicitly limits scope to changing the emergency reset code value and says not to change the post-reset authorization model beyond the reset code value; the excerpt shows authorization-model changes unrelated to the reset code.",
+      "evidence": [
+        "backend/main.mo (excerpt: isValidAdmin logic and comment about no fallback to AccessControl roles)"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
-    "frontend-file-summaries.txt",
-    "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
     "project_state.json"
   ]
 }

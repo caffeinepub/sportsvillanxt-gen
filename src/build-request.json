@@ -1,56 +1,34 @@
 {
   "kind": "build_request",
-  "title": "Add emergency ownership reset option in admin settings and harden post-reset authorization",
+  "title": "Set emergency ownership reset code to 73024141",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add an \"Emergency Ownership Reset\" option to the Admin Dashboard \"Settings\" tab that lets an admin enter an emergency reset code and trigger an ownership reset (calling the backend emergency reset API).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Reset owner ship add option emergency reset code settings"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin Dashboard > Settings includes a new card/section labeled \"Emergency Ownership Reset\"",
-        "The section includes an input labeled \"Emergency Reset Code\" and a primary action button labeled \"Reset Ownership\"",
-        "Clicking \"Reset Ownership\" calls the existing React Query mutation that invokes the backend emergency reset API (no backend changes required for the call itself)",
-        "On success, the UI shows a success toast/message indicating ownership has been reset and is now claimable",
-        "On error (e.g., invalid code), the UI shows an English error message and does not navigate away"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "After an emergency ownership reset, ensure previous admin roles do not continue to grant admin access; admin authorization must not fall back to legacy roles when no current owner is set.",
+      "text": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\".",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Reset owner ship add option emergency reset code settings"
+          "Add owner ship reset code code is 73024141"
         ]
       },
       "acceptanceCriteria": [
-        "After calling emergencyResetOwnership with a valid code, a principal that was previously the owner/admin cannot access admin-only backend methods unless they successfully claim ownership again",
-        "When currentOwner is null, admin-only backend methods are not accessible based solely on historical role assignments (i.e., no fallback that keeps old admins active)",
-        "The existing claimNewOwnership flow still works when ownership is claimable and assigns the caller as the sole admin owner"
+        "In backend/main.mo, the constant used by emergencyResetOwnership is set to \"73024141\".",
+        "Calling emergencyResetOwnership(\"73024141\") succeeds and sets currentOwner to null and ownershipClaimable to true.",
+        "Calling emergencyResetOwnership with any other code continues to trap with \"Unauthorized: Invalid emergency reset code\"."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo",
-    "Do not edit files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT",
-    "Use English for all user-facing text"
+    "Do not edit files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Implement third-party authentication or any auth provider other than Internet Identity",
-    "Add external database storage or additional backend services",
-    "Expose or display the hard-coded emergency reset code value in the UI"
+    "Do not change the ownership reset UI layout or wording.",
+    "Do not add new authentication mechanisms or third-party integrations.",
+    "Do not change the post-reset authorization model beyond the reset code value."
   ],
   "imageRequirements": {
     "required": [],

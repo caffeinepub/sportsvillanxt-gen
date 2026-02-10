@@ -1,25 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-add-an-emergency-ownership-reset-option-to-the-admin-dashboard-settings-tab-that-lets-an-admin-enter-an-emergency-reset-code-and-trigger-an-ownership-reset-calling-the-backend-emergency-reset-api",
-      "featureTitle": "Add an \"Emergency Ownership Reset\" option to the Admin Dashboard \"Settings\" tab that lets an admin enter an emergency reset code and trigger an ownership reset (calling the backend emergency reset API).",
-      "files": [
-        "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-        "frontend/src/pages/admin/AdminDashboardPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }

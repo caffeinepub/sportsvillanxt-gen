@@ -1,37 +1,30 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project to add ownership reset functionality, including an emergency reset code option in settings.",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": true,
-  "existing_features": [
-    {
-      "id": "feature-add-an-emergency-ownership-reset-option-to-the-admin-dashboard-settings-tab-that-lets-an-admin-enter-an-emergency-reset-code-and-trigger-an-ownership-reset-calling-the-backend-emergency-reset-api",
-      "title": "Add an \"Emergency Ownership Reset\" option to the Admin Dashboard \"Settings\" tab that lets an admin enter an emergency reset code and trigger an ownership reset (calling the backend emergency reset API).",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    }
+  "summary": "New project",
+  "architectural_notes": [
+    "Ownership reset flow should support a reset code (e.g., 73024141) for authorization/verification."
   ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add ability to reset ownership, with an emergency reset code option in settings",
+      "summary": "Add ownership reset code (code: 73024141) to the ownership reset flow",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-3",
-      "summary": "After an emergency ownership reset, ensure previous admin roles do not continue to grant admin access; admin authorization must not fall back to legacy roles when no current owner is set.",
+      "id": "AR-2",
+      "summary": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\".",
       "reqIds": [
-        "REQ-2"
+        "REQ-1"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Add emergency ownership reset option in admin settings and harden post-reset authorization",
+  "projectName": "Set emergency ownership reset code to 73024141",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

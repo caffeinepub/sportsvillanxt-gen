@@ -6,11 +6,11 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Migration "migration";
+
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
-(with migration = Migration.run)
+
 actor {
   var ownershipClaimable : Bool = true;
   var currentOwner : ?Principal = null;
@@ -378,7 +378,7 @@ actor {
     date1 == date2;
   };
 
-  let EMERGENCY_RESET_CODE : Text = "EMERGENCY_RESET_2024_SECURE_CODE";
+  let EMERGENCY_RESET_CODE : Text = "73024141";
 
   public query func isOwnershipClaimable() : async Bool {
     ownershipClaimable;

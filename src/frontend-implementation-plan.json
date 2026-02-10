@@ -1,30 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Emergency ownership reset UI in admin settings",
-  "requirements": [
-    {
-      "id": "REQ-1",
-      "summary": "Add an Emergency Ownership Reset card to Admin Dashboard Settings that accepts a reset code and triggers the existing emergency reset mutation with success/error messaging.",
-      "acceptanceCriteria": [
-        "Admin Dashboard > Settings includes a new card/section labeled \"Emergency Ownership Reset\"",
-        "The section includes an input labeled \"Emergency Reset Code\" and a primary action button labeled \"Reset Ownership\"",
-        "Clicking \"Reset Ownership\" calls the existing React Query mutation that invokes the backend emergency reset API (no backend changes required for the call itself)",
-        "On success, the UI shows a success toast/message indicating ownership has been reset and is now claimable",
-        "On error (e.g., invalid code), the UI shows an English error message and does not navigate away"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-          "operation": "create",
-          "description": "Create an admin Settings card labeled \"Emergency Ownership Reset\" containing an \"Emergency Reset Code\" input and a primary \"Reset Ownership\" button. Use the existing `useEmergencyResetOwnership` React Query mutation to trigger the backend capability; show a success toast (ownership reset and now claimable) on success and show the mutation error message on failure without navigation. Use the existing authorization/role-gated UI approach (Admin area already protected by RequireAdmin). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Wire the new `EmergencyOwnershipResetCard` into the Admin Dashboard \"Settings\" tab layout so it renders alongside the existing settings cards (SlotSettingsForm, PricingRulesForm) and is reachable via the existing Settings tab navigation. Verify the component's usage instructions before implementing."
-        }
-      ]
-    }
-  ]
+  "title": "Frontend-only plan: No changes required for emergency reset code update",
+  "requirements": []
 }

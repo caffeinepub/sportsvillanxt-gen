@@ -1,31 +1,18 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T17:10:43.017Z",
+  "generatedAt": "2026-02-10T17:30:38.794Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 1,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add an \"Emergency Ownership Reset\" option to the Admin Dashboard \"Settings\" tab that lets an admin enter an emergency reset code and trigger an ownership reset (calling the backend emergency reset API).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "After an emergency ownership reset, ensure previous admin roles do not continue to grant admin access; admin authorization must not fall back to legacy roles when no current owner is set.",
+        "summary": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\".",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
@@ -34,17 +21,13 @@
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
