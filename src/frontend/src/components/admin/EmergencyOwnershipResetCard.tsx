@@ -21,11 +21,16 @@ export default function EmergencyOwnershipResetCard() {
     }
 
     try {
-      await emergencyReset.mutateAsync(resetCode);
+      await emergencyReset.mutateAsync(resetCode.trim());
       toast.success('Ownership has been reset successfully. Ownership is now claimable.');
       setResetCode('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to reset ownership');
+      const errorMessage = error.message || 'Failed to reset ownership';
+      if (errorMessage.includes('Invalid reset code')) {
+        toast.error('Invalid reset code. Please check and try again.');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 

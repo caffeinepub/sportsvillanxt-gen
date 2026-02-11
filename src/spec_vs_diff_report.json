@@ -1,37 +1,44 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T17:30:38.790Z",
-  "summary": "REQ-1 (set emergency ownership reset code to \"73024141\" in backend/main.mo and preserve trap behavior for other codes) is not evidenced in the provided diff excerpt. The diff also includes changes not requested (project_state.json feature-request bookkeeping and backend authorization logic changes unrelated to the reset code).",
+  "generatedAt": "2026-02-11T04:25:35.211Z",
+  "summary": "REQ-4 (frontend emergency reset UI prompting for a code, requiring non-empty input, submitting to backend, and showing clear English success/error messaging including invalid-code messaging) appears implemented via EmergencyOwnershipResetCard and related hook handling. REQ-3 (backend exact-match authorization code 73024141 enforced in emergencyResetOwnership with trap on mismatch) is not verifiable from the provided backend diff excerpt because emergencyResetOwnership and the reset code check are not shown. REQ-2 (publish/deploy to resolve draft-expired) cannot be verified from code diffs.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\" (and other codes trap with \"Unauthorized: Invalid emergency reset code\"), and the successful call sets currentOwner to null and ownershipClaimable to true.",
-      "reason": "In the provided truncated backend/main.mo diff excerpt, there is no visible emergencyResetOwnership function nor any constant/key being set to \"73024141\", and no evidence of the required success/trap behavior change.",
+      "id": "REQ-2",
+      "requirement": "Publish the latest application changes by rebuilding and deploying the current version so end users can access them (resolving the prior \"draft app expired\" publish issue).",
+      "reason": "The diff only shows code changes; it contains no evidence of a rebuild/deploy or anything that demonstrates a successful publish without the draft-expired error.",
       "evidence": [
-        "backend/main.mo (truncated excerpt shows no emergencyResetOwnership or reset-code constant)"
+        "<file-diff> (no CI/deploy artifacts or publish output included)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Ensure the backend emergency ownership reset authorization code is set to \"73024141\" and that emergencyResetOwnership only succeeds when the provided authorizationKey exactly equals \"73024141\"; otherwise it must trap with an unauthorized/invalid reset code error.",
+      "reason": "backend/main.mo is truncated and does not include the emergencyResetOwnership implementation or any explicit check for the exact code \"73024141\", so the exact-match enforcement and trap message cannot be confirmed from the provided diff summary.",
+      "evidence": [
+        "backend/main.mo (truncated; emergencyResetOwnership not shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/updated project tracking metadata for feature requests (AR-1/AR-2) and architectural notes in project_state.json.",
-      "reason": "The BuildRequest only asks for a backend constant change; it does not request updating project_state.json or adding feature-request metadata.",
+      "description": "Added a top-level React error boundary UI (AppErrorBoundary) and wrapped the app with it.",
+      "reason": "Not requested by REQ-2/REQ-3/REQ-4; this is an additional resilience feature beyond the emergency reset and publish requirements.",
       "evidence": [
-        "project_state.json"
-      ]
-    },
-    {
-      "description": "Changes to admin validation / authorization behavior (e.g., isValidAdmin only checks currentOwner with no fallback to AccessControl roles) and related authorization checks shown in backend/main.mo excerpt.",
-      "reason": "The BuildRequest explicitly limits scope to changing the emergency reset code value and says not to change the post-reset authorization model beyond the reset code value; the excerpt shows authorization-model changes unrelated to the reset code.",
-      "evidence": [
-        "backend/main.mo (excerpt: isValidAdmin logic and comment about no fallback to AccessControl roles)"
+        "frontend/src/components/system/AppErrorBoundary.tsx",
+        "frontend/src/App.tsx"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
+    "frontend/src/components/system/AppErrorBoundary.tsx",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json"
   ]
 }

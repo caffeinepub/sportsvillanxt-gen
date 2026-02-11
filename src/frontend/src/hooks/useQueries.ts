@@ -110,10 +110,8 @@ export function useResetAndClaimOwnership() {
       } catch (error: any) {
         // Extract clean error message from backend trap
         const errorMessage = error.message || String(error);
-        if (errorMessage.includes('Invalid emergency reset code')) {
+        if (errorMessage.includes('Invalid emergency reset code') || errorMessage.includes('Unauthorized')) {
           throw new Error('Invalid reset code. Please check and try again.');
-        } else if (errorMessage.includes('Unauthorized')) {
-          throw new Error('Invalid reset code');
         }
         throw new Error('Failed to reset and claim ownership. Please try again.');
       }
@@ -136,12 +134,10 @@ export function useEmergencyResetOwnership() {
       try {
         await actor.emergencyResetOwnership(resetCode);
       } catch (error: any) {
-        // Extract clean error message from backend trap
+        // Normalize backend trap errors to consistent English messages
         const errorMessage = error.message || String(error);
-        if (errorMessage.includes('Invalid emergency reset code')) {
+        if (errorMessage.includes('Invalid emergency reset code') || errorMessage.includes('Unauthorized')) {
           throw new Error('Invalid reset code. Please check and try again.');
-        } else if (errorMessage.includes('Unauthorized')) {
-          throw new Error('Invalid reset code');
         }
         throw new Error('Failed to reset ownership. Please try again.');
       }

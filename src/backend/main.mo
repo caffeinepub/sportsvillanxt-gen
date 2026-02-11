@@ -10,7 +10,6 @@ import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
-
 actor {
   var ownershipClaimable : Bool = true;
   var currentOwner : ?Principal = null;
@@ -32,11 +31,10 @@ actor {
     };
   };
 
-  // Only check current owner for admin - no fallback to AccessControl roles
   func isValidAdmin(caller : Principal) : Bool {
     switch (currentOwner) {
       case (?owner) { Principal.equal(caller, owner) };
-      case (null) { false }; // No fallback to roles if no owner after migration
+      case (null) { false };
     };
   };
 
@@ -384,7 +382,6 @@ actor {
     ownershipClaimable;
   };
 
-  // Non-admin initial ownership claiming - only works when ownership is claimable
   public shared ({ caller }) func claimNewOwnership() : async () {
     if (not ownershipClaimable) {
       Runtime.trap("Unauthorized: Ownership cannot currently be claimed");
@@ -396,9 +393,6 @@ actor {
     AccessControl.assignRole(accessControlState, caller, caller, #admin);
   };
 
-  // Emergency reset (makes ownership claimable again)
-  // After this is called, currentOwner is null and previous admin roles do NOT grant access
-  // Only claimNewOwnership() can establish a new owner
   public shared ({ caller }) func emergencyResetOwnership(authorizationKey : Text) : async () {
     if (authorizationKey != EMERGENCY_RESET_CODE) {
       Runtime.trap("Unauthorized: Invalid emergency reset code");

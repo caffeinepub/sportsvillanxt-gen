@@ -1,6 +1,48 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend-only plan: No changes required for emergency reset code update",
-  "requirements": []
+  "title": "Emergency ownership reset UX hardening and publish-readiness (frontend)",
+  "requirements": [
+    {
+      "id": "REQ-2",
+      "summary": "Harden frontend startup to avoid build/runtime failures so the published app loads and can safely call backend methods.",
+      "acceptanceCriteria": [
+        "A new deployed/published version is produced successfully (no draft-expired blocking error).",
+        "The published app loads successfully in the browser and can call the backend canister methods without runtime errors."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Remove unused imports that can fail strict builds, and wrap the RouterProvider with a top-level error boundary so unexpected runtime errors render a clear English fallback instead of breaking the app."
+        },
+        {
+          "path": "frontend/src/components/system/AppErrorBoundary.tsx",
+          "operation": "create",
+          "description": "Create a small React error boundary component that shows an English recovery message (and optional reload action) when the app encounters an uncaught runtime error."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Ensure the admin emergency ownership reset UI validates the code, submits it to emergencyResetOwnership, and shows clear success/error messaging including an invalid-code message.",
+      "acceptanceCriteria": [
+        "The Emergency Ownership Reset form requires a non-empty code before submission.",
+        "Submitting an incorrect code shows an English error message indicating the code is invalid.",
+        "Submitting \"73024141\" shows an English success message indicating ownership was reset and is now claimable."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
+          "operation": "modify",
+          "description": "Tighten the form UX: keep the non-empty requirement, ensure submission always uses the entered code, and display explicit English success and invalid-code error messaging. Use existing toasts for user-facing messages. Verify the component's usage instructions before implementing (authorization component: handle backend trap errors gracefully)."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Improve error normalization for useEmergencyResetOwnership so backend trap text variants consistently map to a specific English invalid-code error message, and other failures map to a clear generic English error. Verify the component's usage instructions before implementing (authorization component: error handling guidance for trap-based authorization failures)."
+        }
+      ]
+    }
+  ]
 }

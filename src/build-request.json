@@ -1,37 +1,84 @@
 {
   "kind": "build_request",
-  "title": "Set emergency ownership reset code to 73024141",
+  "title": "Publish current build (emergency ownership reset code 73024141)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\".",
-      "target": "backend",
+      "id": "REQ-2",
+      "text": "Publish the latest application changes by rebuilding and deploying the current version so end users can access them (resolving the prior \"draft app expired\" publish issue).",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Add owner ship reset code code is 73024141"
+          "Publish changes"
         ]
       },
       "acceptanceCriteria": [
-        "In backend/main.mo, the constant used by emergencyResetOwnership is set to \"73024141\".",
-        "Calling emergencyResetOwnership(\"73024141\") succeeds and sets currentOwner to null and ownershipClaimable to true.",
-        "Calling emergencyResetOwnership with any other code continues to trap with \"Unauthorized: Invalid emergency reset code\"."
+        "A new deployed/published version is produced successfully (no draft-expired blocking error).",
+        "The published app loads successfully in the browser and can call the backend canister methods without runtime errors."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Ensure the backend emergency ownership reset authorization code is set to \"73024141\" and that emergencyResetOwnership only succeeds when the provided authorizationKey exactly equals \"73024141\"; otherwise it must trap with an unauthorized/invalid reset code error.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Publish changes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Calling emergencyResetOwnership(\"wrong\") fails and returns an error message indicating an invalid/unauthorized emergency reset code.",
+        "Calling emergencyResetOwnership(\"73024141\") succeeds and results in ownershipClaimable == true and currentOwner == null.",
+        "No other code value is accepted (exact match required)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Ensure the admin UI emergency ownership reset flow prompts for an emergency reset code, submits the entered code to emergencyResetOwnership, and displays clear English success and error messages (including a specific message for invalid reset codes).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Publish changes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Emergency Ownership Reset form requires a non-empty code before submission.",
+        "Submitting an incorrect code shows an English error message indicating the code is invalid.",
+        "Submitting \"73024141\" shows an English success message indicating ownership was reset and is now claimable."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT."
+    "Use English for any user-facing text.",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if an upgrade requires state migration.",
+    "Do not modify any frontend files under frontend/src/components/ui or any paths listed in frontend.immutablePaths."
   ],
   "nonGoals": [
-    "Do not change the ownership reset UI layout or wording.",
-    "Do not add new authentication mechanisms or third-party integrations.",
-    "Do not change the post-reset authorization model beyond the reset code value."
+    "Add new authentication providers beyond Internet Identity.",
+    "Implement real payment processing (the app may keep using the existing payment placeholder page).",
+    "Add external databases or third-party backends."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -10,6 +10,9 @@ import PaymentPlaceholderPage from './pages/customer/PaymentPlaceholderPage';
 import BookingConfirmationPage from './pages/customer/BookingConfirmationPage';
 import ReceiptLookupPage from './pages/customer/ReceiptLookupPage';
 import RequireAdmin from './components/auth/RequireAdmin';
+import AppErrorBoundary from './components/system/AppErrorBoundary';
+
+const queryClient = new QueryClient();
 
 const rootRoute = createRootRoute({
   component: AppLayout,
@@ -74,9 +77,13 @@ declare module '@tanstack/react-router' {
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <RouterProvider router={router} />
-      <Toaster />
-    </ThemeProvider>
+    <AppErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <RouterProvider router={router} />
+          <Toaster />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </AppErrorBoundary>
   );
 }

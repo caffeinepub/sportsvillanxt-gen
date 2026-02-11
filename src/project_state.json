@@ -1,13 +1,32 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 5,
   "summary": "New project",
   "architectural_notes": [
     "Ownership reset flow should support a reset code (e.g., 73024141) for authorization/verification."
   ],
-  "known_issues": [],
+  "known_issues": [
+    "Deployment/publish process encountered an error: draft app expired and required rebuild before publishing."
+  ],
   "isFixRequest": false,
-  "existing_features": [],
+  "existing_features": [
+    {
+      "id": "feature-publish-the-latest-application-changes-by-rebuilding-and-deploying-the-current-version-so-end-users-can-access-them-resolving-the-prior-draft-app-expired-publish-issue",
+      "title": "Publish the latest application changes by rebuilding and deploying the current version so end users can access them (resolving the prior \"draft app expired\" publish issue).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-admin-ui-emergency-ownership-reset-flow-prompts-for-an-emergency-reset-code-submits-the-entered-code-to-emergencyresetownership-and-displays-clear-english-success-and-error-messages-including-a-specific-message-for-invalid-reset-codes",
+      "title": "Ensure the admin UI emergency ownership reset flow prompts for an emergency reset code, submits the entered code to emergencyResetOwnership, and displays clear English success and error messages (including a specific message for invalid reset codes).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    }
+  ],
   "new_feature_requests": [
     {
       "id": "AR-1",
@@ -20,6 +39,14 @@
       "summary": "Update the backend emergency ownership reset authorization key so that calling emergencyResetOwnership only succeeds when the provided reset code equals \"73024141\".",
       "reqIds": [
         "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Ensure the backend emergency ownership reset authorization code is set to \"73024141\" and that emergencyResetOwnership only succeeds when the provided authorizationKey exactly equals \"73024141\"; otherwise it must trap with an unauthorized/invalid reset code error.",
+      "reqIds": [
+        "REQ-3"
       ],
       "status": "pending"
     }
