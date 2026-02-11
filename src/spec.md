@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Publish the latest build so it is accessible to end users, and enforce the emergency ownership reset code (73024141) in both backend and admin UI.
+**Goal:** Enable dual-owner admin access by supporting up to two admin owner Principals, with backend authorization and UI management.
 
 **Planned changes:**
-- Rebuild and deploy the current version to resolve the prior “draft app expired” publish issue.
-- Backend: set the emergency ownership reset authorization code to exactly `73024141`, and trap with an invalid/unauthorized reset code error for any other value.
-- Frontend (admin UI): add/confirm an Emergency Ownership Reset flow that requires a non-empty code, calls `emergencyResetOwnership(code)`, and shows clear English success/error messages (including a specific invalid-code message).
+- Update backend ownership storage from a single owner to a list/set of 0–2 owner Principals, and authorize all admin-protected backend methods for either owner.
+- Add backend methods to list current owners, add a second owner (owners-only; enforce max of 2; reject duplicates), and remove an owner (owners-only; prevent removing the last remaining owner unless using emergency reset).
+- Update claim and emergency reset flows so claim sets the first owner when claimable, and emergencyResetOwnership clears all owners and returns the system to a claimable state (keeping the existing emergency reset code check).
+- Add an Admin Dashboard > Settings section to view current owners, add a second owner Principal, and remove an owner, with clear English success/error messaging and existing admin-only route protection.
+- Update admin login / access-restriction UI copy to remove single-owner wording and any hardcoded owner email, replacing with generic dual-owner-appropriate English text.
 
-**User-visible outcome:** The app is published and loads successfully; admins can enter an emergency reset code to reset ownership—wrong codes show a clear error, and `73024141` successfully resets ownership to a claimable state.
+**User-visible outcome:** Admin owners can manage up to two admin owner accounts (view/add/remove) from the Admin Dashboard, and either configured owner can access all admin-only functionality; non-owners remain blocked with clear errors and updated access-restriction messaging.

@@ -4,6 +4,7 @@ import { Settings, Calendar, DollarSign } from 'lucide-react';
 import SlotSettingsForm from '../../components/admin/SlotSettingsForm';
 import PricingRulesForm from '../../components/admin/PricingRulesForm';
 import EmergencyOwnershipResetCard from '../../components/admin/EmergencyOwnershipResetCard';
+import AdminOwnersCard from '../../components/admin/AdminOwnersCard';
 import AdminBookingCalendar from '../../components/admin/AdminBookingCalendar';
 import EarningsTracker from '../../components/admin/EarningsTracker';
 
@@ -42,7 +43,8 @@ export default function AdminDashboardPage() {
             <SlotSettingsForm />
             <PricingRulesForm />
           </div>
-          <div className="max-w-2xl">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <AdminOwnersCard />
             <EmergencyOwnershipResetCard />
           </div>
         </TabsContent>

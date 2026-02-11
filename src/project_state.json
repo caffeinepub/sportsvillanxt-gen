@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 7,
   "summary": "New project",
   "architectural_notes": [
     "Ownership reset flow should support a reset code (e.g., 73024141) for authorization/verification."
@@ -25,6 +25,22 @@
         "REQ-4"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-an-admin-dashboard-ui-section-for-managing-admin-owners-view-current-owners-add-a-second-owner-and-remove-an-owner-and-wire-it-to-the-new-backend-apis-all-user-facing-text-must-be-in-english",
+      "title": "Add an Admin Dashboard UI section for managing admin owners (view current owners, add a second owner, and remove an owner) and wire it to the new backend APIs. All user-facing text must be in English.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-admin-login-access-restriction-copy-that-currently-implies-a-single-owner-and-contains-a-hardcoded-owner-email-so-that-it-correctly-reflects-that-there-can-be-up-to-two-admin-owners-without-hardcoding-a-specific-owner-identity-in-user-facing-text",
+      "title": "Update admin login/access-restriction copy that currently implies a single owner (and contains a hardcoded owner email) so that it correctly reflects that there can be up to two admin owners, without hardcoding a specific owner identity in user-facing text.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -47,6 +63,36 @@
       "summary": "Ensure the backend emergency ownership reset authorization code is set to \"73024141\" and that emergencyResetOwnership only succeeds when the provided authorizationKey exactly equals \"73024141\"; otherwise it must trap with an unauthorized/invalid reset code error.",
       "reqIds": [
         "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add a second admin owner (support 2 admin owners)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Update the backend ownership model to support up to two admin owners (two distinct Principals) instead of a single currentOwner, and treat either owner as an admin for all admin-protected operations.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Add backend APIs to manage the second admin owner: allow an existing owner to add a second owner (by Principal) up to the limit of 2, list current owners, and remove an owner (with safeguards so the last remaining owner cannot remove themselves unless ownership is being fully reset).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Update the ownership claim and emergency reset behavior to work correctly with dual owners: initial claim should set the first owner; emergencyResetOwnership must clear all owners and return the system to a claimable state for a new first owner.",
+      "reqIds": [
+        "REQ-7"
       ],
       "status": "pending"
     }

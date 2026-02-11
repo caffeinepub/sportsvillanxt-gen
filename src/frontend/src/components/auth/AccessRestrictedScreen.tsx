@@ -16,7 +16,7 @@ export default function AccessRestrictedScreen() {
             </div>
             <CardTitle className="text-destructive">Access Restricted</CardTitle>
             <CardDescription>
-              This admin dashboard is owner-only. Only <span className="font-semibold text-foreground">sportlogin8@gmail.com</span> (the owner/admin) can access this area.
+              This area is restricted to admin owners. Only authorized admin owners can access this dashboard.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -27,12 +27,9 @@ export default function AccessRestrictedScreen() {
             >
               Go to Booking Page
             </Button>
-            <div className="mt-4 space-y-2 text-center">
+            <div className="mt-4 text-center">
               <p className="text-xs text-muted-foreground">
-                If you believe you should have access, please contact the owner.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Owner/Admin contact: <span className="font-medium">sportlogin8@gmail.com</span>
+                If you believe you should have access, please contact an admin owner.
               </p>
             </div>
           </CardContent>

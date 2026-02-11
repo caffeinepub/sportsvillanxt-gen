@@ -1,60 +1,82 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T04:25:35.214Z",
+  "generatedAt": "2026-02-11T08:50:13.209Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 5,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-2",
-        "summary": "Publish the latest application changes by rebuilding and deploying the current version so end users can access them (resolving the prior \"draft app expired\" publish issue).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/system/AppErrorBoundary.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/system/AppErrorBoundary.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Ensure the backend emergency ownership reset authorization code is set to \"73024141\" and that emergencyResetOwnership only succeeds when the provided authorizationKey exactly equals \"73024141\"; otherwise it must trap with an unauthorized/invalid reset code error.",
+        "id": "REQ-5",
+        "summary": "Update the backend ownership model to support up to two admin owners (two distinct Principals) instead of a single currentOwner, and treat either owner as an admin for all admin-protected operations.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-4",
-        "summary": "Ensure the admin UI emergency ownership reset flow prompts for an emergency reset code, submits the entered code to emergencyResetOwnership, and displays clear English success and error messages (including a specific message for invalid reset codes).",
+        "id": "REQ-6",
+        "summary": "Add backend APIs to manage the second admin owner: allow an existing owner to add a second owner (by Principal) up to the limit of 2, list current owners, and remove an owner (with safeguards so the last remaining owner cannot remove themselves unless ownership is being fully reset).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Update the ownership claim and emergency reset behavior to work correctly with dual owners: initial claim should set the first owner; emergencyResetOwnership must clear all owners and return the system to a claimable state for a new first owner.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Add an Admin Dashboard UI section for managing admin owners (view current owners, add a second owner, and remove an owner) and wire it to the new backend APIs. All user-facing text must be in English.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/admin/AdminOwnersCard.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/admin/AdminOwnersCard.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Update admin login/access-restriction copy that currently implies a single owner (and contains a hardcoded owner email) so that it correctly reflects that there can be up to two admin owners, without hardcoding a specific owner identity in user-facing text.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/components/auth/AccessRestrictedScreen.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/components/auth/AccessRestrictedScreen.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
-    "frontend/src/components/system/AppErrorBoundary.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/admin/AdminOwnersCard.tsx",
+    "frontend/src/components/auth/AccessRestrictedScreen.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/AdminLoginPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

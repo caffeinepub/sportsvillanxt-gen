@@ -1,46 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Emergency ownership reset UX hardening and publish-readiness (frontend)",
+  "title": "Dual-owner admin management UI",
   "requirements": [
     {
-      "id": "REQ-2",
-      "summary": "Harden frontend startup to avoid build/runtime failures so the published app loads and can safely call backend methods.",
+      "id": "REQ-8",
+      "summary": "Add an Admin Dashboard Settings section to view/add/remove admin owners and connect it to backend owner-management capabilities.",
       "acceptanceCriteria": [
-        "A new deployed/published version is produced successfully (no draft-expired blocking error).",
-        "The published app loads successfully in the browser and can call the backend canister methods without runtime errors."
+        "Admin Dashboard > Settings includes a clearly labeled \"Admin Owners\" section showing the current owners (0..2) as Principal text.",
+        "Admins can add a second owner Principal and see a success message on success and clear English error messages on failure (including owner-limit reached, invalid principal, not authorized).",
+        "Admins can remove an owner and see success/error messages; the UI prevents or clearly errors when attempting to remove the last remaining owner.",
+        "Non-admin users cannot access this UI (remains behind the existing RequireAdmin guard)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Remove unused imports that can fail strict builds, and wrap the RouterProvider with a top-level error boundary so unexpected runtime errors render a clear English fallback instead of breaking the app."
+          "description": "Add React Query hooks/mutations for owner management using the backend actor capabilities already exposed in types (getOwners, addOwner, removeOwner). Ensure queries invalidate/refetch appropriately after add/remove, and normalize trap errors into clear English UI-ready messages. Use patterns consistent with the existing authorization flow; verify the selected \"authorization\" component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/system/AppErrorBoundary.tsx",
+          "path": "frontend/src/components/admin/AdminOwnersCard.tsx",
           "operation": "create",
-          "description": "Create a small React error boundary component that shows an English recovery message (and optional reload action) when the app encounters an uncaught runtime error."
+          "description": "Create an Admin Owners card/section UI for the Admin Dashboard Settings tab: fetch and display current owners (0..2) in a readable list; provide an input to add a new owner by Principal text and a remove action per owner. Validate Principal input client-side (parse + show 'Invalid Principal' before submitting) and surface success/error toasts/messages in English. Keep the section suitable for admin-only viewing; verify the selected \"authorization\" component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Wire the new AdminOwnersCard into the Settings tab (\"Admin Dashboard > Settings\") alongside existing settings cards, ensuring it is reachable without adding new routes. Verify the selected \"authorization\" component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-4",
-      "summary": "Ensure the admin emergency ownership reset UI validates the code, submits it to emergencyResetOwnership, and shows clear success/error messaging including an invalid-code message.",
+      "id": "REQ-9",
+      "summary": "Update admin access/login copy to reflect up to two admin owners and remove hardcoded owner identity details.",
       "acceptanceCriteria": [
-        "The Emergency Ownership Reset form requires a non-empty code before submission.",
-        "Submitting an incorrect code shows an English error message indicating the code is invalid.",
-        "Submitting \"73024141\" shows an English success message indicating ownership was reset and is now claimable."
+        "AdminLoginPage and any access restricted screens no longer claim there is only one owner/admin.",
+        "User-facing text does not hardcode a specific owner email address; it uses generic wording such as \"This area is restricted to admin owners.\"",
+        "All updated text is in English and remains clear and consistent with the dual-owner behavior."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/admin/EmergencyOwnershipResetCard.tsx",
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Tighten the form UX: keep the non-empty requirement, ensure submission always uses the entered code, and display explicit English success and invalid-code error messaging. Use existing toasts for user-facing messages. Verify the component's usage instructions before implementing (authorization component: handle backend trap errors gracefully)."
+          "description": "Replace hardcoded single-owner language and the embedded owner email with generic English wording that supports up to two admin owners (e.g., 'restricted to admin owners'). Ensure both the unauthenticated login screen and the authenticated-but-not-admin restricted screen use the updated copy. Verify the selected \"authorization\" component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/auth/AccessRestrictedScreen.tsx",
           "operation": "modify",
-          "description": "Improve error normalization for useEmergencyResetOwnership so backend trap text variants consistently map to a specific English invalid-code error message, and other failures map to a clear generic English error. Verify the component's usage instructions before implementing (authorization component: error handling guidance for trap-based authorization failures)."
+          "description": "Update the access restricted message to remove the hardcoded owner email and any single-owner implication; use generic English wording consistent with up to two admin owners. Verify the selected \"authorization\" component's usage instructions before implementing."
         }
       ]
     }

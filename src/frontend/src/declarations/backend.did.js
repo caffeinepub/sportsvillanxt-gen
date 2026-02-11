@@ -58,6 +58,7 @@ export const SlotSettings = IDL.Record({
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addOwner' : IDL.Func([IDL.Principal], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'blockSlot' : IDL.Func([BlockedSlot], [], []),
   'book' : IDL.Func([TimeSlot, IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
@@ -73,6 +74,7 @@ export const idlService = IDL.Service({
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getDailyEarnings' : IDL.Func([IDL.Int], [EarningsReport], []),
   'getMyBookings' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
+  'getOwners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
   'getPricingRules' : IDL.Func([], [PricingRules], ['query']),
   'getSlotSettings' : IDL.Func([], [SlotSettings], ['query']),
   'getUserProfile' : IDL.Func(
@@ -82,8 +84,10 @@ export const idlService = IDL.Service({
     ),
   'getWeeklyEarnings' : IDL.Func([IDL.Int, IDL.Int], [EarningsReport], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'isOwner' : IDL.Func([], [IDL.Bool], ['query']),
   'isOwnershipClaimable' : IDL.Func([], [IDL.Bool], ['query']),
   'postMigrationClearExplicitRoles' : IDL.Func([], [], []),
+  'removeOwner' : IDL.Func([IDL.Principal], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'unblockSlot' : IDL.Func([IDL.Int, IDL.Int], [], []),
   'updatePricingRules' : IDL.Func([PricingRules], [], []),
@@ -143,6 +147,7 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addOwner' : IDL.Func([IDL.Principal], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'blockSlot' : IDL.Func([BlockedSlot], [], []),
     'book' : IDL.Func([TimeSlot, IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
@@ -158,6 +163,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getDailyEarnings' : IDL.Func([IDL.Int], [EarningsReport], []),
     'getMyBookings' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
+    'getOwners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'getPricingRules' : IDL.Func([], [PricingRules], ['query']),
     'getSlotSettings' : IDL.Func([], [SlotSettings], ['query']),
     'getUserProfile' : IDL.Func(
@@ -167,8 +173,10 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getWeeklyEarnings' : IDL.Func([IDL.Int, IDL.Int], [EarningsReport], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'isOwner' : IDL.Func([], [IDL.Bool], ['query']),
     'isOwnershipClaimable' : IDL.Func([], [IDL.Bool], ['query']),
     'postMigrationClearExplicitRoles' : IDL.Func([], [], []),
+    'removeOwner' : IDL.Func([IDL.Principal], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'unblockSlot' : IDL.Func([IDL.Int, IDL.Int], [], []),
     'updatePricingRules' : IDL.Func([PricingRules], [], []),

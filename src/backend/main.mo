@@ -1,5 +1,6 @@
 import Array "mo:core/Array";
 import Int "mo:core/Int";
+import List "mo:core/List";
 import Map "mo:core/Map";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
@@ -10,9 +11,12 @@ import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+import Migration "migration";
+
+(with migration = Migration.run)
 actor {
   var ownershipClaimable : Bool = true;
-  var currentOwner : ?Principal = null;
+  let owners = List.empty<Principal>();
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -25,17 +29,11 @@ actor {
   let userProfiles = Map.empty<Principal, UserProfile>();
 
   func isCurrentOwner(caller : Principal) : Bool {
-    switch (currentOwner) {
-      case (?owner) { Principal.equal(caller, owner) };
-      case (null) { false };
-    };
+    owners.any(func(owner) { Principal.equal(caller, owner) });
   };
 
   func isValidAdmin(caller : Principal) : Bool {
-    switch (currentOwner) {
-      case (?owner) { Principal.equal(caller, owner) };
-      case (null) { false };
-    };
+    isCurrentOwner(caller);
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -179,7 +177,7 @@ actor {
     timeSlot.duration > 0 and timeSlot.startHour >= 0 and timeSlot.startHour < 24;
   };
 
-  func isWeekend(date : Int) : Bool {
+  func isWeekend(_date : Int) : Bool {
     false;
   };
 
@@ -382,15 +380,39 @@ actor {
     ownershipClaimable;
   };
 
+  public query ({ caller }) func isOwner() : async Bool {
+    isCurrentOwner(caller);
+  };
+
   public shared ({ caller }) func claimNewOwnership() : async () {
     if (not ownershipClaimable) {
       Runtime.trap("Unauthorized: Ownership cannot currently be claimed");
     };
 
-    currentOwner := ?caller;
-    ownershipClaimable := false;
+    if (owners.size() != 0) {
+      Runtime.trap("Unauthorized: Ownership has already been claimed");
+    };
 
+    owners.add(caller);
+    ownershipClaimable := false;
     AccessControl.assignRole(accessControlState, caller, caller, #admin);
+  };
+
+  public shared ({ caller }) func addOwner(newOwner : Principal) : async () {
+    if (not isValidAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only existing owners can add new owners");
+    };
+
+    if (owners.size() >= 2) {
+      Runtime.trap("Cannot add owner: Maximum of 2 owners allowed");
+    };
+
+    if (isCurrentOwner(newOwner)) {
+      Runtime.trap("Principal is already an owner");
+    };
+
+    owners.add(newOwner);
+    AccessControl.assignRole(accessControlState, caller, newOwner, #admin);
   };
 
   public shared ({ caller }) func emergencyResetOwnership(authorizationKey : Text) : async () {
@@ -398,7 +420,7 @@ actor {
       Runtime.trap("Unauthorized: Invalid emergency reset code");
     };
 
-    currentOwner := null;
+    owners.clear();
     ownershipClaimable := true;
   };
 
@@ -411,6 +433,33 @@ actor {
   public shared ({ caller }) func postMigrationClearExplicitRoles() : async () {
     if (not isValidAdmin(caller)) {
       Runtime.trap("Unauthorized: Only admins can perform post-migration role clearing");
+    };
+  };
+
+  public query ({ caller }) func getOwners() : async [Principal] {
+    if (not isValidAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only admins can view the list of owners");
+    };
+    owners.toArray();
+  };
+
+  public shared ({ caller }) func removeOwner(owner : Principal) : async () {
+    if (not isValidAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only admins can remove owners");
+    };
+
+    if (not isCurrentOwner(owner)) {
+      Runtime.trap("Principal is not an owner");
+    };
+
+    if (owners.size() == 1 and Principal.equal(caller, owner)) {
+      Runtime.trap("Cannot remove yourself as the last remaining owner");
+    };
+
+    let filteredOwners = owners.filter(func(o) { not Principal.equal(o, owner) });
+    owners.clear();
+    for (owner in filteredOwners.values()) {
+      owners.add(owner);
     };
   };
 };

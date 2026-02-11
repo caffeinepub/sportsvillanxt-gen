@@ -138,6 +138,7 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    addOwner(newOwner: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     blockSlot(slot: BlockedSlot): Promise<void>;
     book(timeSlot: TimeSlot, customerName: string, phoneNumber: string, sport: string): Promise<string>;
@@ -153,13 +154,16 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getDailyEarnings(date: bigint): Promise<EarningsReport>;
     getMyBookings(): Promise<Array<Booking>>;
+    getOwners(): Promise<Array<Principal>>;
     getPricingRules(): Promise<PricingRules>;
     getSlotSettings(): Promise<SlotSettings>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWeeklyEarnings(startDate: bigint, endDate: bigint): Promise<EarningsReport>;
     isCallerAdmin(): Promise<boolean>;
+    isOwner(): Promise<boolean>;
     isOwnershipClaimable(): Promise<boolean>;
     postMigrationClearExplicitRoles(): Promise<void>;
+    removeOwner(owner: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     unblockSlot(date: bigint, startHour: bigint): Promise<void>;
     updatePricingRules(rules: PricingRules): Promise<void>;
@@ -179,6 +183,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            return result;
+        }
+    }
+    async addOwner(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addOwner(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addOwner(arg0);
             return result;
         }
     }
@@ -392,6 +410,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getOwners(): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getOwners();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getOwners();
+            return result;
+        }
+    }
     async getPricingRules(): Promise<PricingRules> {
         if (this.processError) {
             try {
@@ -462,6 +494,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async isOwner(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isOwner();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isOwner();
+            return result;
+        }
+    }
     async isOwnershipClaimable(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -487,6 +533,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.postMigrationClearExplicitRoles();
+            return result;
+        }
+    }
+    async removeOwner(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.removeOwner(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.removeOwner(arg0);
             return result;
         }
     }

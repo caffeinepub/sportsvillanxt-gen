@@ -55,6 +55,7 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    addOwner(newOwner: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     blockSlot(slot: BlockedSlot): Promise<void>;
     book(timeSlot: TimeSlot, customerName: string, phoneNumber: string, sport: string): Promise<string>;
@@ -70,13 +71,16 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getDailyEarnings(date: bigint): Promise<EarningsReport>;
     getMyBookings(): Promise<Array<Booking>>;
+    getOwners(): Promise<Array<Principal>>;
     getPricingRules(): Promise<PricingRules>;
     getSlotSettings(): Promise<SlotSettings>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWeeklyEarnings(startDate: bigint, endDate: bigint): Promise<EarningsReport>;
     isCallerAdmin(): Promise<boolean>;
+    isOwner(): Promise<boolean>;
     isOwnershipClaimable(): Promise<boolean>;
     postMigrationClearExplicitRoles(): Promise<void>;
+    removeOwner(owner: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     unblockSlot(date: bigint, startHour: bigint): Promise<void>;
     updatePricingRules(rules: PricingRules): Promise<void>;

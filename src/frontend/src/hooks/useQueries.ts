@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { SlotSettings, PricingRules, BlockedSlot, Booking, EarningsReport, UserProfile } from '../backend';
+import { Principal } from '@dfinity/principal';
 
 // User Profile Queries
 export function useGetCallerUserProfile() {
@@ -91,6 +92,7 @@ export function useClaimOwnership() {
       // Invalidate admin status and ownership claimable to reflect new ownership
       queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
       queryClient.invalidateQueries({ queryKey: ['ownershipClaimable'] });
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
     },
   });
 }
@@ -120,6 +122,7 @@ export function useResetAndClaimOwnership() {
       // Invalidate admin status and ownership claimable to reflect new ownership
       queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
       queryClient.invalidateQueries({ queryKey: ['ownershipClaimable'] });
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
     },
   });
 }
@@ -146,6 +149,83 @@ export function useEmergencyResetOwnership() {
       // Invalidate both admin status and ownership claimable queries
       queryClient.invalidateQueries({ queryKey: ['isCallerAdmin'] });
       queryClient.invalidateQueries({ queryKey: ['ownershipClaimable'] });
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
+    },
+  });
+}
+
+// Owner Management Queries
+export function useGetOwners() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Principal[]>({
+    queryKey: ['owners'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getOwners();
+      } catch (error: any) {
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('Unauthorized')) {
+          throw new Error('Only admins can view the list of owners');
+        }
+        throw new Error('Failed to fetch owners');
+      }
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddOwner() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (newOwner: Principal) => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        await actor.addOwner(newOwner);
+      } catch (error: any) {
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('Maximum of 2 owners allowed')) {
+          throw new Error('Cannot add owner: Maximum of 2 owners allowed');
+        } else if (errorMessage.includes('already an owner')) {
+          throw new Error('This principal is already an owner');
+        } else if (errorMessage.includes('Unauthorized')) {
+          throw new Error('Only existing owners can add new owners');
+        }
+        throw new Error('Failed to add owner. Please try again.');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
+    },
+  });
+}
+
+export function useRemoveOwner() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (owner: Principal) => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        await actor.removeOwner(owner);
+      } catch (error: any) {
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('Cannot remove yourself as the last remaining owner')) {
+          throw new Error('Cannot remove the last remaining owner');
+        } else if (errorMessage.includes('not an owner')) {
+          throw new Error('This principal is not an owner');
+        } else if (errorMessage.includes('Unauthorized')) {
+          throw new Error('Only admins can remove owners');
+        }
+        throw new Error('Failed to remove owner. Please try again.');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
     },
   });
 }

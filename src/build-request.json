@@ -1,71 +1,109 @@
 {
   "kind": "build_request",
-  "title": "Publish current build (emergency ownership reset code 73024141)",
+  "title": "Support two admin owners (dual-owner admin access)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-2",
-      "text": "Publish the latest application changes by rebuilding and deploying the current version so end users can access them (resolving the prior \"draft app expired\" publish issue).",
-      "target": "unknown",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Publish changes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new deployed/published version is produced successfully (no draft-expired blocking error).",
-        "The published app loads successfully in the browser and can call the backend canister methods without runtime errors."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Ensure the backend emergency ownership reset authorization code is set to \"73024141\" and that emergencyResetOwnership only succeeds when the provided authorizationKey exactly equals \"73024141\"; otherwise it must trap with an unauthorized/invalid reset code error.",
+      "id": "REQ-5",
+      "text": "Update the backend ownership model to support up to two admin owners (two distinct Principals) instead of a single currentOwner, and treat either owner as an admin for all admin-protected operations.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "Publish changes"
+          "Add 2 admin owner"
         ]
       },
       "acceptanceCriteria": [
-        "Calling emergencyResetOwnership(\"wrong\") fails and returns an error message indicating an invalid/unauthorized emergency reset code.",
-        "Calling emergencyResetOwnership(\"73024141\") succeeds and results in ownershipClaimable == true and currentOwner == null.",
-        "No other code value is accepted (exact match required)."
+        "Backend persists an owner set/list that can contain 0, 1, or 2 owner Principals.",
+        "All existing admin-gated backend methods (e.g., updateSlotSettings, updatePricingRules, blockSlot/unblockSlot, getAllBookings, earnings APIs, etc.) authorize successfully when called by either owner principal.",
+        "Non-owners continue to receive an Unauthorized trap for admin-gated backend methods."
       ]
     },
     {
-      "id": "REQ-4",
-      "text": "Ensure the admin UI emergency ownership reset flow prompts for an emergency reset code, submits the entered code to emergencyResetOwnership, and displays clear English success and error messages (including a specific message for invalid reset codes).",
+      "id": "REQ-6",
+      "text": "Add backend APIs to manage the second admin owner: allow an existing owner to add a second owner (by Principal) up to the limit of 2, list current owners, and remove an owner (with safeguards so the last remaining owner cannot remove themselves unless ownership is being fully reset).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Add 2 admin owner"
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a backend method to add a second owner that only an existing owner can call, and it traps with a clear English error if the owner limit (2) would be exceeded or if the principal is already an owner.",
+        "There is a backend query method to return the current owners as an array/list of Principals (length 0..2).",
+        "There is a backend method to remove an owner that only an existing owner can call, and it traps with a clear English error if attempting to remove the last remaining owner (unless ownership is being reset via the emergency reset flow)."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Update the ownership claim and emergency reset behavior to work correctly with dual owners: initial claim should set the first owner; emergencyResetOwnership must clear all owners and return the system to a claimable state for a new first owner.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Add 2 admin owner"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When ownership is claimable, claimNewOwnership sets the first owner and makes ownership non-claimable (as it does today), and the caller becomes an admin.",
+        "emergencyResetOwnership clears the owners list (both owners if present) and returns the system to an ownership-claimable state.",
+        "The emergency reset authorization check remains enforced and uses the existing code value currently configured in backend/main.mo (\"73024141\")."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Add an Admin Dashboard UI section for managing admin owners (view current owners, add a second owner, and remove an owner) and wire it to the new backend APIs. All user-facing text must be in English.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "Publish changes"
+          "Add 2 admin owner"
         ]
       },
       "acceptanceCriteria": [
-        "The Emergency Ownership Reset form requires a non-empty code before submission.",
-        "Submitting an incorrect code shows an English error message indicating the code is invalid.",
-        "Submitting \"73024141\" shows an English success message indicating ownership was reset and is now claimable."
+        "Admin Dashboard > Settings includes a card/section labeled clearly (e.g., \"Admin Owners\") showing the currently configured owners (0..2) in a readable format (Principal text).",
+        "The UI provides an input to add a second owner Principal and shows a success toast/message on success and a clear English error toast/message on failure (including owner-limit reached, invalid principal, not authorized).",
+        "The UI provides a remove action for an owner and shows success/error messages; it prevents or clearly errors when attempting to remove the last remaining owner.",
+        "Non-admin users cannot access this UI (it remains behind the existing RequireAdmin guard)."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Update admin login/access-restriction copy that currently implies a single owner (and contains a hardcoded owner email) so that it correctly reflects that there can be up to two admin owners, without hardcoding a specific owner identity in user-facing text.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Add 2 admin owner"
+        ]
+      },
+      "acceptanceCriteria": [
+        "AdminLoginPage and any access restricted screens no longer claim there is only one owner/admin.",
+        "User-facing text does not hardcode a specific owner email address; it uses generic wording such as \"This area is restricted to admin owners.\"",
+        "All updated text is in English and remains clear and consistent with the dual-owner behavior."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if an upgrade requires state migration.",
-    "Do not modify any frontend files under frontend/src/components/ui or any paths listed in frontend.immutablePaths."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit any files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, and frontend/src/components/ui).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Add new authentication providers beyond Internet Identity.",
-    "Implement real payment processing (the app may keep using the existing payment placeholder page).",
-    "Add external databases or third-party backends."
+    "Implementing third-party authentication/roles beyond the existing Internet Identity flow.",
+    "Adding more than two owners (the requirement is specifically for 2 admin owners).",
+    "Adding real-time collaboration or notifications around owner changes."
   ],
   "imageRequirements": {
     "required": [],

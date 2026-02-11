@@ -1,10 +1,22 @@
+import List "mo:core/List";
+import Principal "mo:core/Principal";
+
 module {
-  type EmptyActor = {
+  public type OldActor = {
     ownershipClaimable : Bool;
     currentOwner : ?Principal;
   };
 
-  public func run(old : EmptyActor) : EmptyActor {
-    old;
+  public type NewActor = {
+    ownershipClaimable : Bool;
+    owners : List.List<Principal>;
+  };
+
+  public func run(old : OldActor) : NewActor {
+    let owners = List.empty<Principal>();
+    {
+      ownershipClaimable = old.ownershipClaimable;
+      owners;
+    };
   };
 };
